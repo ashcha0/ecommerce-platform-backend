@@ -7,8 +7,8 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/ecommerce_db?useSSL=false&characterEncoding=utf8
-    username: ecomm_user
-    password: securePass123
+    username: root
+    password: 147308
     hikari:
       maximum-pool-size: 20
       connection-timeout: 3000
