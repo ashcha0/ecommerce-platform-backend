@@ -12,8 +12,9 @@ public class Product {
     private String description; // 商品描述
     private BigDecimal price; // 销售价格
     private Integer salesCount; // 销量
-    private Integer stock; // 库存数量
-    private String category; // 商品分类
+    // private Integer stock; // 库存数量 - 数据库表中不存在此字段
+    // private String category; // 商品分类 - 数据库表中不存在此字段
+    private String imageUrl; // 商品图片URL
     private LocalDateTime createTime; // 创建时间
     private LocalDateTime updateTime; // 更新时间
     private Integer status; // 状态(0:下架, 1:上架)

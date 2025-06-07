@@ -1,6 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ecommerce.mapper.ProductMapper">
+    
+    <!-- 插入商品 -->
+    <insert id="insert" parameterType="com.ecommerce.model.entity.Product" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO product (
+            store_id, name, description, price, sales_count, create_time, update_time, status
+        ) VALUES (
+            #{storeId}, #{name}, #{description}, #{price}, #{salesCount}, #{createTime}, #{updateTime}, #{status}
+        )
+    </insert>
+    
+    <!-- 更新商品 -->
+    <update id="update" parameterType="com.ecommerce.model.entity.Product">
+        UPDATE product 
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="description != null">
+                description = #{description},
+            </if>
+            <if test="price != null">
+                price = #{price},
+            </if>
+
+            <if test="salesCount != null">
+                sales_count = #{salesCount},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="imageUrl != null">
+                image_url = #{imageUrl},
+            </if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 更新商品状态 -->
+    <update id="updateStatus">
+        UPDATE product 
+        SET status = #{status}, update_time = NOW() 
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 删除商品 -->
+    <delete id="deleteById">
+        DELETE FROM product WHERE id = #{id}
+    </delete>
+    
+    <!-- 根据ID查询商品 -->
+    <select id="selectById" resultType="com.ecommerce.model.entity.Product">
+        SELECT * FROM product WHERE id = #{id}
+    </select>
+    
+    <!-- 条件查询商品 -->
     <select id="selectByCondition" resultType="com.ecommerce.model.entity.Product">
         SELECT *
         FROM product
@@ -20,10 +76,7 @@
             <if test="maxPrice != null">
                 AND price &lt;= #{maxPrice}
             </if>
-            <!-- inStock条件暂时注释掉进行调试 -->
-            <!-- <if test="inStock == true">
-                AND stock > 0
-            </if> -->
+
             <!-- 处理额外的参数以避免MyBatis参数映射错误 -->
             <if test="offset != null">
                 <!-- offset参数由PageHelper处理，这里不需要实际使用 -->
@@ -34,4 +87,12 @@
         </where>
         ORDER BY create_time DESC
     </select>
+    
+    <!-- 查询低库存商品 -->
+    <select id="selectLowStockProducts" resultType="com.ecommerce.model.entity.Product">
+        SELECT * FROM product 
+        WHERE sales_count &lt;= #{threshold} AND status = 1
+        ORDER BY sales_count ASC
+    </select>
+    
 </mapper>

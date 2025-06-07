@@ -7,18 +7,48 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.dao.DataAccessException;
+import jakarta.validation.ConstraintViolationException;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    /**
+     * 处理业务异常
+     */
     @ExceptionHandler(BusinessException.class)
-    public Result<?> handleBusinessException(BusinessException e) {
-        log.error("业务异常: {}", e.getMessage());
-        return Result.fail(e.getCode(), e.getMessage()); // 修改为 getCode() 和 Result.fail
+    public Result<Void> handleBusinessException(BusinessException e) {
+        log.error("业务异常: {}", e.getMessage(), e);
+        return Result.fail(e.getCode(), e.getMessage());
+    }
+
+    /**
+     * 处理参数验证异常
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public Result<Void> handleValidationException(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+        log.error("参数验证异常: {}", message, e);
+        return Result.fail(ErrorCode.PARAM_ERROR, "参数验证失败: " + message);
+    }
+
+    /**
+     * 处理约束验证异常
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public Result<Void> handleConstraintViolationException(ConstraintViolationException e) {
+        String message = e.getConstraintViolations().stream()
+                .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
+                .collect(Collectors.joining(", "));
+        log.error("约束验证异常: {}", message, e);
+        return Result.fail(ErrorCode.PARAM_ERROR, "参数验证失败: " + message);
     }
 
     @ExceptionHandler(RedisConnectionFailureException.class)

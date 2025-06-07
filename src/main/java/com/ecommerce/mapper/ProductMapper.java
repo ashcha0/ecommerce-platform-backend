@@ -3,6 +3,7 @@ package com.ecommerce.mapper;
 import com.ecommerce.model.dto.ProductQueryDTO;
 import com.ecommerce.model.entity.Product;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 @Mapper
@@ -11,7 +12,9 @@ public interface ProductMapper {
 
     int update(Product product);
 
-    int updateStatus(Long id, Integer status);
+    int updateStatus(@Param("id") Long id, @Param("status") Integer status);
+
+    int deleteById(Long id);
 
     Product selectById(Long id);
 

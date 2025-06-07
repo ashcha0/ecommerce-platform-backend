@@ -16,5 +16,7 @@ public interface ProductService {
 
     Product updateProduct(Long productId, ProductCreateDTO dto);
 
-    void toggleProductStatus(Long productId, boolean status);
+    void deleteProduct(Long productId);
+
+    void toggleProductStatus(Long productId, Integer status);
 }
