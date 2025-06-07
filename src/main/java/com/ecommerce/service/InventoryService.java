@@ -1,8 +1,8 @@
 package com.ecommerce.service;
 
+import com.ecommerce.common.result.PageResult;
 import com.ecommerce.model.dto.DeliveryUpdateDTO;
 import com.ecommerce.model.entity.Inventory;
-import com.ecommerce.model.vo.PageResult;
 
 public interface InventoryService {
     /**
