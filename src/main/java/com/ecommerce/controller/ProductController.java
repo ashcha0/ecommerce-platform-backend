@@ -2,6 +2,7 @@ package com.ecommerce.controller;
 
 import com.ecommerce.model.dto.ProductCreateDTO;
 import com.ecommerce.model.dto.ProductQueryDTO;
+import com.ecommerce.model.dto.ProductUpdateDTO;
 import com.ecommerce.common.result.PageResult;
 import com.ecommerce.common.result.Result;
 import com.ecommerce.model.entity.Product;
@@ -114,19 +115,20 @@ public class ProductController {
         }
     }
 
-    @Operation(summary = "更新商品", description = "根据商品ID更新商品信息")
     @PutMapping("/{id}")
-    public Result<Product> updateProduct(
-            @Parameter(description = "商品ID", required = true)
-            @PathVariable("id") @NotNull(message = "商品ID不能为空") Long id,
-            @Parameter(description = "商品更新信息", required = true)
-            @RequestBody @Valid ProductCreateDTO updateDTO) {
+    @Operation(summary = "更新商品信息", description = "根据商品ID更新商品信息")
+    public Result<Void> updateProduct(
+            @Parameter(description = "商品ID", required = true) @PathVariable Long id,
+            @Valid @RequestBody ProductUpdateDTO productUpdateDTO) {
         try {
-            Product product = productService.updateProduct(id, updateDTO);
-            return Result.success(product);
+            productService.updateProduct(id, productUpdateDTO);
+            return Result.success();
+        } catch (BusinessException e) {
+            log.error("更新商品失败，商品ID: {}, 错误: {}", id, e.getMessage());
+            return Result.error(e.getCode(), e.getMessage());
         } catch (Exception e) {
-            log.error("更新商品失败，商品ID: {}, 商品名称: {}", id, updateDTO.getName(), e);
-            throw e; // 让全局异常处理器处理
+            log.error("更新商品异常，商品ID: {}", id, e);
+            return Result.error(ErrorCode.INTERNAL_SERVER_ERROR, "更新商品失败");
         }
     }
 
