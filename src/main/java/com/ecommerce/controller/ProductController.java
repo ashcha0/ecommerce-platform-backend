@@ -224,7 +224,7 @@ public class ProductController {
     })
     public Result<Void> updateProduct(
         @Parameter(description = "商品ID", required = true, example = "1")
-        @PathVariable Long id,
+        @PathVariable("id") Long id,
         @Parameter(description = "商品更新信息", required = true)
         @Valid @RequestBody ProductUpdateDTO productUpdateDTO
     ) {
