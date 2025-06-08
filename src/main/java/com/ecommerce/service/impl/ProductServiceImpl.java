@@ -12,6 +12,8 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +46,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Cacheable(value = "product:detail", key = "#productId", unless = "#result == null")
     public Product getProductDetail(Long productId) {
         if (productId == null) {
             throw new BusinessException(400, "商品ID不能为空");
@@ -86,6 +89,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"product:detail", "product:search"}, key = "#id")
     public void updateProduct(Long id, ProductUpdateDTO productUpdateDTO) {
         log.info("更新商品，商品ID: {}", id);
         
@@ -169,6 +173,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"product:detail", "product:search"}, key = "#productId")
     public void deleteProduct(Long productId) {
         if (productId == null) {
             throw new BusinessException(400, "商品ID不能为空");
@@ -191,6 +196,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"product:detail", "product:search"}, key = "#productId")
     public void toggleProductStatus(Long productId, Integer status) {
         log.info("切换商品状态，商品ID: {}, 目标状态: {}", productId, status);
         
