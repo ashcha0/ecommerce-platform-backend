@@ -1,6 +1,36 @@
 package com.ecommerce.common.constant;
 
-public class ErrorCode {
+import lombok.Getter;
+
+@Getter
+public enum ErrorCode {
+    // 系统错误
+    SYSTEM_ERROR(1000, "系统错误"),
+
+    // 用户相关
+    USER_NOT_FOUND(2001, "用户不存在"),
+    USER_DUPLICATE_USERNAME(2002, "用户名已存在"),
+
+    // 商品相关
+    PRODUCT_NOT_FOUND(3001, "商品不存在"),
+    PRODUCT_INSUFFICIENT_STOCK(3002, "商品库存不足"),
+
+    // 订单相关
+    ORDER_NOT_FOUND(4001, "订单不存在"),
+    ORDER_ALREADY_PAID(4002, "订单已支付，无法取消"),
+    ORDER_ALREADY_CANCELLED(4003, "订单已取消"),
+
+    // 库存相关
+    INVENTORY_LOCK_FAILED(5001, "库存锁定失败"),
+    INVENTORY_UPDATE_FAILED(5002, "库存更新失败");
+
+    private final int code;
+    private final String message;
+
+    ErrorCode(int code, String message) {
+        this.code = code;
+        this.message = message;
+    }
 
     // 系统错误码
     public static final int SUCCESS = 200;
@@ -16,7 +46,6 @@ public class ErrorCode {
     public static final int PASSWORD_ERROR = 10003;
     
     // 商品相关错误码
-    public static final int PRODUCT_NOT_FOUND = 11001;
     public static final int PRODUCT_NAME_DUPLICATE = 11002;
     public static final int PRODUCT_STATUS_INVALID = 11003;
     public static final int PRODUCT_PRICE_INVALID = 11004;
@@ -28,7 +57,6 @@ public class ErrorCode {
     
     // 订单相关错误码
     public static final int ORDER_CREATE_FAILED = 20001;
-    public static final int ORDER_NOT_FOUND = 20002;
     public static final int ORDER_STATUS_INVALID = 20003;
     
     // 库存相关错误码
