@@ -28,6 +28,22 @@ mybatis:
   configuration:
     map-underscore-to-camel-case: true
 
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.ecommerce: DEBUG
+    com.ecommerce.common.aop: DEBUG
+    org.springframework.web: DEBUG
+    org.mybatis: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+  file:
+    name: logs/ecommerce.log
+    max-size: 10MB
+    max-history: 30
+
 # 自定义配置
 ecommerce:
   order:
