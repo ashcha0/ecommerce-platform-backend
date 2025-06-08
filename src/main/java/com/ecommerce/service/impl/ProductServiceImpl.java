@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Date;
 import com.ecommerce.common.constant.ErrorCode;
 
+import java.time.ZoneId;
+
 @Slf4j
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -102,7 +104,9 @@ public class ProductServiceImpl implements ProductService {
             // 构建更新对象，只更新非空字段
             Product product = new Product();
             product.setId(id);
-            product.setUpdateTime(new Date());
+            Date date = new Date();
+            LocalDateTime localDateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            product.setUpdateTime(localDateTime);
             
             boolean hasUpdate = false;
             
@@ -133,10 +137,10 @@ public class ProductServiceImpl implements ProductService {
                 }
                 
                 Product.ProductStatus targetStatus = Product.ProductStatus.fromCode(productUpdateDTO.getStatus());
-                if (!existingProduct.canChangeStatusTo(targetStatus)) {
+                if (!existingProduct.canChangeStatusTo(targetStatus.getCode())) {
                     throw new BusinessException(ErrorCode.PRODUCT_STATUS_INVALID,
                             String.format("商品状态不能从%s切换到%s",
-                                    existingProduct.getStatusDesc(), targetStatus.getDescription()));
+                                    existingProduct.getStatusDesc(), targetStatus.getDesc()));
                 }
                 
                 product.setProductStatus(targetStatus);
@@ -148,7 +152,7 @@ public class ProductServiceImpl implements ProductService {
             }
             
             // 执行更新
-            int result = productMapper.updateById(product);
+            int result = productMapper.update(product);
             if (result <= 0) {
                 throw new BusinessException(ErrorCode.PRODUCT_UPDATE_FAILED, "商品更新失败");
             }
@@ -211,25 +215,27 @@ public class ProductServiceImpl implements ProductService {
             Product.ProductStatus targetStatus = Product.ProductStatus.fromCode(status);
             
             // 检查状态切换是否合法
-            if (!existingProduct.canChangeStatusTo(targetStatus)) {
+            if (!existingProduct.canChangeStatusTo(targetStatus.getCode())) {
                 throw new BusinessException(ErrorCode.PRODUCT_STATUS_INVALID,
                         String.format("商品状态不能从%s切换到%s",
-                                existingProduct.getStatusDesc(), targetStatus.getDescription()));
+                                existingProduct.getStatusDesc(), targetStatus.getDesc()));
             }
             
             // 更新商品状态
             Product product = new Product();
             product.setId(productId);
             product.setProductStatus(targetStatus);
-            product.setUpdateTime(new Date());
+            Date date = new Date();
+            LocalDateTime localDateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            product.setUpdateTime(localDateTime);
             
-            int result = productMapper.updateById(product);
+            int result = productMapper.update(product);
             if (result <= 0) {
                 throw new BusinessException(ErrorCode.PRODUCT_STATUS_UPDATE_FAILED, "商品状态更新失败");
             }
 
             log.info("商品状态切换成功，商品ID: {}, 从{}切换到{}",
-                    productId, existingProduct.getStatusDesc(), targetStatus.getDescription());
+                    productId, existingProduct.getStatusDesc(), targetStatus.getDesc());
         } catch (BusinessException e) {
             log.error("切换商品状态失败，商品ID: {}, 目标状态: {}, 错误: {}", productId, status, e.getMessage());
             throw e;

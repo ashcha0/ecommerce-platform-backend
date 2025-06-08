@@ -24,6 +24,7 @@ public class ErrorCode {
     public static final int PRODUCT_UPDATE_FAILED = 11006;
     public static final int PRODUCT_DELETE_FAILED = 11007;
     public static final int PRODUCT_STATUS_CHANGE_FAILED = 11008;
+    public static final int PRODUCT_STATUS_UPDATE_FAILED = 11009;
     
     // 订单相关错误码
     public static final int ORDER_CREATE_FAILED = 20001;
