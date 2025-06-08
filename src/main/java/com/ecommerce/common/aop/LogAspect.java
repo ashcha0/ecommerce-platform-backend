@@ -111,14 +111,14 @@ public class LogAspect {
                 while (headerNames.hasMoreElements()) {
                     String headerName = headerNames.nextElement();
                     // 过滤敏感信息
-                    if (!headerName.toLowerCase().contains("authorization") && 
-                        !headerName.toLowerCase().contains("cookie")) {
+                    if (!headerName.toLowerCase().contains("authorization") &&
+                            !headerName.toLowerCase().contains("cookie")) {
                         headers.put(headerName, request.getHeader(headerName));
                     }
                 }
-                
-                log.info("[{}] 请求开始 - URL: {}, Method: {}, IP: {}, User-Agent: {}, 参数: {}", 
-                        methodName, 
+
+                log.info("[{}] 请求开始 - URL: {}, Method: {}, IP: {}, User-Agent: {}, 参数: {}",
+                        methodName,
                         request.getRequestURL().toString(),
                         request.getMethod(),
                         getClientIpAddress(request),

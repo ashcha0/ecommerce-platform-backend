@@ -19,6 +19,9 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import java.util.Date;
+import com.ecommerce.common.constant.ErrorCode;
+
 @Slf4j
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -131,9 +134,9 @@ public class ProductServiceImpl implements ProductService {
                 
                 Product.ProductStatus targetStatus = Product.ProductStatus.fromCode(productUpdateDTO.getStatus());
                 if (!existingProduct.canChangeStatusTo(targetStatus)) {
-                    throw new BusinessException(ErrorCode.PRODUCT_STATUS_INVALID, 
-                        String.format("商品状态不能从%s切换到%s", 
-                            existingProduct.getStatusDesc(), targetStatus.getDescription()));
+                    throw new BusinessException(ErrorCode.PRODUCT_STATUS_INVALID,
+                            String.format("商品状态不能从%s切换到%s",
+                                    existingProduct.getStatusDesc(), targetStatus.getDescription()));
                 }
                 
                 product.setProductStatus(targetStatus);
@@ -209,9 +212,9 @@ public class ProductServiceImpl implements ProductService {
             
             // 检查状态切换是否合法
             if (!existingProduct.canChangeStatusTo(targetStatus)) {
-                throw new BusinessException(ErrorCode.PRODUCT_STATUS_INVALID, 
-                    String.format("商品状态不能从%s切换到%s", 
-                        existingProduct.getStatusDesc(), targetStatus.getDescription()));
+                throw new BusinessException(ErrorCode.PRODUCT_STATUS_INVALID,
+                        String.format("商品状态不能从%s切换到%s",
+                                existingProduct.getStatusDesc(), targetStatus.getDescription()));
             }
             
             // 更新商品状态
@@ -224,9 +227,9 @@ public class ProductServiceImpl implements ProductService {
             if (result <= 0) {
                 throw new BusinessException(ErrorCode.PRODUCT_STATUS_UPDATE_FAILED, "商品状态更新失败");
             }
-            
-            log.info("商品状态切换成功，商品ID: {}, 从{}切换到{}", 
-                productId, existingProduct.getStatusDesc(), targetStatus.getDescription());
+
+            log.info("商品状态切换成功，商品ID: {}, 从{}切换到{}",
+                    productId, existingProduct.getStatusDesc(), targetStatus.getDescription());
         } catch (BusinessException e) {
             log.error("切换商品状态失败，商品ID: {}, 目标状态: {}, 错误: {}", productId, status, e.getMessage());
             throw e;

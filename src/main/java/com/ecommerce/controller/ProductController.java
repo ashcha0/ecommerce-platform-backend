@@ -17,6 +17,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import com.ecommerce.common.exception.BusinessException;
+import com.ecommerce.common.constant.ErrorCode;
 
 @Tag(name = "商品管理", description = "商品相关API接口")
 @RestController
@@ -90,8 +92,7 @@ public class ProductController {
     @Operation(summary = "获取商品详情", description = "根据商品ID获取商品详细信息")
     @GetMapping("/{id}")
     public Result<Product> getProductDetail(
-            @Parameter(description = "商品ID", required = true)
-            @PathVariable("id") @NotNull(message = "商品ID不能为空") Long id) {
+            @Parameter(description = "商品ID", required = true) @PathVariable("id") @NotNull(message = "商品ID不能为空") Long id) {
         try {
             Product product = productService.getProductDetail(id);
             return Result.success(product);
@@ -104,8 +105,7 @@ public class ProductController {
     @Operation(summary = "创建商品", description = "创建新的商品")
     @PostMapping
     public Result<Product> createProduct(
-            @Parameter(description = "商品创建信息", required = true)
-            @RequestBody @Valid ProductCreateDTO createDTO) {
+            @Parameter(description = "商品创建信息", required = true) @RequestBody @Valid ProductCreateDTO createDTO) {
         try {
             Product product = productService.createProduct(createDTO);
             return Result.success(product);
@@ -125,18 +125,17 @@ public class ProductController {
             return Result.success();
         } catch (BusinessException e) {
             log.error("更新商品失败，商品ID: {}, 错误: {}", id, e.getMessage());
-            return Result.error(e.getCode(), e.getMessage());
+            return Result.fail(e.getCode(), e.getMessage());
         } catch (Exception e) {
             log.error("更新商品异常，商品ID: {}", id, e);
-            return Result.error(ErrorCode.INTERNAL_SERVER_ERROR, "更新商品失败");
+            return Result.fail(ErrorCode.INTERNAL_SERVER_ERROR, "更新商品失败");
         }
     }
 
     @Operation(summary = "删除商品", description = "根据商品ID删除商品")
     @DeleteMapping("/{id}")
     public Result<Void> deleteProduct(
-            @Parameter(description = "商品ID", required = true)
-            @PathVariable("id") @NotNull(message = "商品ID不能为空") Long id) {
+            @Parameter(description = "商品ID", required = true) @PathVariable("id") @NotNull(message = "商品ID不能为空") Long id) {
         try {
             productService.deleteProduct(id);
             return Result.success();
@@ -149,10 +148,8 @@ public class ProductController {
     @Operation(summary = "切换商品状态", description = "切换商品的上架/下架状态")
     @PatchMapping("/{id}/status")
     public Result<Void> toggleProductStatus(
-            @Parameter(description = "商品ID", required = true)
-            @PathVariable("id") @NotNull(message = "商品ID不能为空") Long id,
-            @Parameter(description = "商品状态：0-下架，1-上架", required = true)
-            @RequestParam("status") @NotNull(message = "商品状态不能为空") Integer status) {
+            @Parameter(description = "商品ID", required = true) @PathVariable("id") @NotNull(message = "商品ID不能为空") Long id,
+            @Parameter(description = "商品状态：0-下架，1-上架", required = true) @RequestParam("status") @NotNull(message = "商品状态不能为空") Integer status) {
         try {
             productService.toggleProductStatus(id, status);
             return Result.success();

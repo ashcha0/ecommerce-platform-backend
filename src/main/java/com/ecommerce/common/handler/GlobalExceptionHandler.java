@@ -73,7 +73,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public Result<Void> handleTypeMismatchException(MethodArgumentTypeMismatchException e) {
         log.error("参数类型转换异常: {}", e.getMessage(), e);
-        String message = String.format("参数 '%s' 的值 '%s' 类型不正确，期望类型为 %s", 
+        String message = String.format("参数 '%s' 的值 '%s' 类型不正确，期望类型为 %s",
                 e.getName(), e.getValue(), e.getRequiredType().getSimpleName());
         return Result.fail(ErrorCode.PARAM_ERROR, message);
     }
@@ -84,7 +84,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public Result<Void> handleMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
         log.error("请求方法不支持异常: {}", e.getMessage(), e);
-        String message = String.format("请求方法 '%s' 不支持，支持的方法: %s", 
+        String message = String.format("请求方法 '%s' 不支持，支持的方法: %s",
                 e.getMethod(), String.join(", ", e.getSupportedMethods()));
         return Result.fail(ErrorCode.BAD_REQUEST, message);
     }
