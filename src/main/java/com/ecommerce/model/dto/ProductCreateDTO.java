@@ -31,7 +31,6 @@ public class ProductCreateDTO {
 
     // private String category; // 商品分类 - 数据库表中不存在此字段
     
-    @URL(message = "商品图片URL格式不正确")
     @Size(max = 500, message = "商品图片URL长度不能超过500个字符")
     private String imageUrl; // 商品图片URL
 }

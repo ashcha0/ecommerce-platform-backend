@@ -4,6 +4,7 @@ import com.ecommerce.model.dto.ProductCreateDTO;
 import com.ecommerce.model.dto.ProductQueryDTO;
 import com.ecommerce.model.dto.ProductUpdateDTO;
 import com.ecommerce.common.result.PageResult;
+import com.ecommerce.common.result.Result;
 import com.ecommerce.mapper.ProductMapper;
 import com.ecommerce.model.entity.Product;
 import com.ecommerce.service.ProductService;
@@ -18,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -62,14 +65,28 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public Product createProduct(ProductCreateDTO dto) {
+    public Result<Product> createProduct(ProductCreateDTO dto) {
         if (dto == null) {
             throw new BusinessException(400, "商品信息不能为空");
         }
         
+        String warningMessage = null;
+        
         // 创建商品实体
         Product product = new Product();
         BeanUtils.copyProperties(dto, product);
+        
+        // 验证并处理图片URL
+        if (dto.getImageUrl() != null && !dto.getImageUrl().trim().isEmpty()) {
+            if (isValidUrl(dto.getImageUrl())) {
+                product.setImageUrl(dto.getImageUrl());
+            } else {
+                // URL格式无效，设置为空
+                product.setImageUrl(null);
+                warningMessage = "URL格式无效，字段已被设置为空";
+                log.warn("创建商品时图片URL格式无效: {}", dto.getImageUrl());
+            }
+        }
         
         // 设置默认值
         product.setSalesCount(0);
@@ -84,13 +101,19 @@ public class ProductServiceImpl implements ProductService {
         }
         
         log.info("成功创建商品，ID: {}, 名称: {}", product.getId(), product.getName());
-        return product;
+        
+        // 返回结果，如果有警告信息则包含在响应中
+        if (warningMessage != null) {
+            return Result.success(product, warningMessage);
+        } else {
+            return Result.success(product);
+        }
     }
 
     @Override
     @Transactional
     @CacheEvict(value = {"product:detail", "product:search"}, key = "#a0")
-    public void updateProduct(Long id, ProductUpdateDTO productUpdateDTO) {
+    public Result<String> updateProduct(Long id, ProductUpdateDTO productUpdateDTO) {
         log.info("更新商品，商品ID: {}", id);
         
         try {
@@ -113,6 +136,7 @@ public class ProductServiceImpl implements ProductService {
             product.setUpdateTime(localDateTime);
             
             boolean hasUpdate = false;
+            String warningMessage = null;
             
             if (productUpdateDTO.getName() != null) {
                 product.setName(productUpdateDTO.getName());
@@ -130,7 +154,15 @@ public class ProductServiceImpl implements ProductService {
             }
             
             if (productUpdateDTO.getImageUrl() != null) {
-                product.setImageUrl(productUpdateDTO.getImageUrl());
+                // 验证URL格式
+                if (isValidUrl(productUpdateDTO.getImageUrl())) {
+                    product.setImageUrl(productUpdateDTO.getImageUrl());
+                } else {
+                    // URL格式无效，设置为空
+                    product.setImageUrl(null);
+                    warningMessage = "URL格式无效，字段已被设置为空";
+                    log.warn("商品ID: {} 的图片URL格式无效: {}", id, productUpdateDTO.getImageUrl());
+                }
                 hasUpdate = true;
             }
             
@@ -162,12 +194,36 @@ public class ProductServiceImpl implements ProductService {
             }
             
             log.info("商品更新成功，商品ID: {}", id);
+            
+            // 返回结果，如果有警告信息则包含在响应中
+            if (warningMessage != null) {
+                return Result.success(warningMessage);
+            } else {
+                return Result.success("商品更新成功");
+            }
         } catch (BusinessException e) {
             log.error("更新商品失败，商品ID: {}, 错误: {}", id, e.getMessage());
             throw e;
         } catch (Exception e) {
             log.error("更新商品异常，商品ID: {}", id, e);
             throw new BusinessException(ErrorCode.PRODUCT_UPDATE_FAILED, "商品更新失败");
+        }
+    }
+    
+    /**
+     * 验证URL格式是否有效
+     * @param urlString URL字符串
+     * @return 是否为有效URL
+     */
+    private boolean isValidUrl(String urlString) {
+        if (urlString == null || urlString.trim().isEmpty()) {
+            return false;
+        }
+        try {
+            new URL(urlString);
+            return true;
+        } catch (MalformedURLException e) {
+            return false;
         }
     }
 
