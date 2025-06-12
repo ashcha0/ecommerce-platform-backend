@@ -142,12 +142,11 @@ public class ProductController {
             @ApiResponse(responseCode = "400", description = "参数验证失败", content = @Content(schema = @Schema(implementation = Result.class))),
             @ApiResponse(responseCode = "404", description = "商品不存在", content = @Content(schema = @Schema(implementation = Result.class)))
     })
-    public Result<Void> updateProduct(
+    public Result<String> updateProduct(
             @Parameter(description = "商品ID", required = true, example = "1") @PathVariable("id") Long id,
             @Parameter(description = "商品更新信息", required = true) @Valid @RequestBody ProductUpdateDTO productUpdateDTO) {
         try {
-            productService.updateProduct(id, productUpdateDTO);
-            return Result.success();
+            return productService.updateProduct(id, productUpdateDTO);
         } catch (BusinessException e) {
             log.error("更新商品失败，商品ID: {}, 错误: {}", id, e.getMessage());
             return Result.fail(e.getCode(), e.getMessage());

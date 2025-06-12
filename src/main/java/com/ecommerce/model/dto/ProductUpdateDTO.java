@@ -37,7 +37,6 @@ public class ProductUpdateDTO {
      * 商品图片URL
      */
     @Size(max = 500, message = "图片URL不能超过500个字符")
-    @URL(message = "图片URL格式不正确")
     private String imageUrl;
     
     /**
