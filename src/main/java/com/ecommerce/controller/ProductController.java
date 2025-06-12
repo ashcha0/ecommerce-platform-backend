@@ -127,8 +127,7 @@ public class ProductController {
     public Result<Product> createProduct(
             @Parameter(description = "商品创建信息", required = true) @RequestBody @Valid ProductCreateDTO createDTO) {
         try {
-            Product product = productService.createProduct(createDTO);
-            return Result.success(product);
+            return productService.createProduct(createDTO);
         } catch (Exception e) {
             log.error("创建商品失败，商品名称: {}", createDTO.getName(), e);
             throw e; // 让全局异常处理器处理

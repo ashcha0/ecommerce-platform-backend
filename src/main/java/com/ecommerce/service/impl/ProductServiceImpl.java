@@ -65,14 +65,28 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public Product createProduct(ProductCreateDTO dto) {
+    public Result<Product> createProduct(ProductCreateDTO dto) {
         if (dto == null) {
             throw new BusinessException(400, "商品信息不能为空");
         }
         
+        String warningMessage = null;
+        
         // 创建商品实体
         Product product = new Product();
         BeanUtils.copyProperties(dto, product);
+        
+        // 验证并处理图片URL
+        if (dto.getImageUrl() != null && !dto.getImageUrl().trim().isEmpty()) {
+            if (isValidUrl(dto.getImageUrl())) {
+                product.setImageUrl(dto.getImageUrl());
+            } else {
+                // URL格式无效，设置为空
+                product.setImageUrl(null);
+                warningMessage = "URL格式无效，字段已被设置为空";
+                log.warn("创建商品时图片URL格式无效: {}", dto.getImageUrl());
+            }
+        }
         
         // 设置默认值
         product.setSalesCount(0);
@@ -87,7 +101,13 @@ public class ProductServiceImpl implements ProductService {
         }
         
         log.info("成功创建商品，ID: {}, 名称: {}", product.getId(), product.getName());
-        return product;
+        
+        // 返回结果，如果有警告信息则包含在响应中
+        if (warningMessage != null) {
+            return Result.success(product, warningMessage);
+        } else {
+            return Result.success(product);
+        }
     }
 
     @Override

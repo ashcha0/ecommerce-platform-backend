@@ -14,7 +14,12 @@ public interface ProductService {
 
     Product getProductDetail(Long productId);
 
-    Product createProduct(ProductCreateDTO dto);
+    /**
+     * 创建商品
+     * @param dto 商品创建信息
+     * @return 创建的商品，如果URL格式无效会返回警告信息
+     */
+    Result<Product> createProduct(ProductCreateDTO dto);
 
     /**
      * 更新商品信息
