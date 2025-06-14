@@ -25,11 +25,25 @@
         WHERE product_id = #{productId}
     </update>
 
+    <!-- 更新库存 -->
     <update id="updateStock">
         UPDATE inventory 
         SET stock = stock + #{stockChange}
         WHERE product_id = #{productId}
     </update>
 
-    
+    <!-- 查询低库存商品列表 -->
+    <select id="selectLowStockProducts" resultMap="InventoryResultMap">
+        SELECT id, product_id, stock, low_stock_threshold, update_time
+        FROM inventory
+        WHERE stock &lt;= low_stock_threshold
+    </select>
+
+    <!-- 根据库存范围查询库存信息 -->
+    <select id="selectByStockRange" resultMap="InventoryResultMap">
+        SELECT id, product_id, stock, low_stock_threshold, update_time
+        FROM inventory
+        WHERE stock &gt;= #{minStock} AND stock &lt;= #{maxStock}
+    </select>
+
 </mapper>
