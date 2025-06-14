@@ -88,11 +88,5 @@
         ORDER BY create_time DESC
     </select>
     
-    <!-- 查询低库存商品 -->
-    <select id="selectLowStockProducts" resultType="com.ecommerce.model.entity.Product">
-        SELECT * FROM product 
-        WHERE sales_count &lt;= #{threshold} AND status = 1
-        ORDER BY sales_count ASC
-    </select>
     
 </mapper>

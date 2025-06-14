@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecommerce.mapper.InventoryMapper">
+    
+    <!-- 结果映射 -->
+    <resultMap id="InventoryResultMap" type="com.ecommerce.model.entity.Inventory">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="product_id" property="productId" jdbcType="BIGINT"/>
+        <result column="stock" property="stock" jdbcType="INTEGER"/>
+        <result column="low_stock_threshold" property="lowStockThreshold" jdbcType="INTEGER"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    
+    <!-- 根据商品ID查询库存信息 -->
+    <select id="selectByProductId" parameterType="java.lang.Long" resultMap="InventoryResultMap">
+        SELECT id, product_id, stock, low_stock_threshold, update_time
+        FROM inventory
+        WHERE product_id = #{productId}
+    </select>
+    
+    <!-- 更新低库存阈值 -->
+    <update id="updateLowStockThreshold">
+        UPDATE inventory 
+        SET low_stock_threshold = #{threshold}
+        WHERE product_id = #{productId}
+    </update>
+
+    <!-- 更新库存 -->
+    <update id="updateStock">
+        UPDATE inventory 
+        SET stock = stock + #{stockChange}
+        WHERE product_id = #{productId}
+    </update>
+
+    <!-- 查询低库存商品列表 -->
+    <select id="selectLowStockProducts" resultMap="InventoryResultMap">
+        SELECT id, product_id, stock, low_stock_threshold, update_time
+        FROM inventory
+        WHERE stock &lt;= low_stock_threshold
+    </select>
+
+    <!-- 根据库存范围查询库存信息 -->
+    <select id="selectByStockRange" resultMap="InventoryResultMap">
+        SELECT id, product_id, stock, low_stock_threshold, update_time
+        FROM inventory
+        WHERE stock &gt;= #{minStock} AND stock &lt;= #{maxStock}
+    </select>
+
+    <!-- 检查商品是否存在库存记录 -->
+    <select id="existsByProductId" parameterType="java.lang.Long" resultType="boolean">
+        SELECT COUNT(1) > 0
+        FROM inventory
+        WHERE product_id = #{productId}
+    </select>
+
+    <!-- 插入库存记录 -->
+    <insert id="insert" parameterType="com.ecommerce.model.entity.Inventory" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO inventory (product_id, stock, low_stock_threshold)
+        VALUES (#{productId}, #{stock}, #{lowStockThreshold})
+    </insert>
+
+    <!-- 查询库存统计信息 -->
+    <select id="selectInventoryStats" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalProducts,
+            SUM(stock) as totalStock,
+            COUNT(CASE WHEN stock &lt;= low_stock_threshold THEN 1 END) as lowStockCount,
+            AVG(stock) as avgStock
+        FROM inventory
+    </select>
+
+    <!-- 删除库存记录 -->
+    <delete id="deleteByProductId" parameterType="java.lang.Long">
+        DELETE FROM inventory
+        WHERE product_id = #{productId}
+    </delete>
+
+</mapper>

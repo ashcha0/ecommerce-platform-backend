@@ -14,6 +14,8 @@ public enum ErrorCode {
     // 商品相关
     PRODUCT_NOT_FOUND(3001, "商品不存在"),
     PRODUCT_INSUFFICIENT_STOCK(3002, "商品库存不足"),
+    OPERATION_ERROR(3003,"库存操作失败"),
+    
 
     // 订单相关
     ORDER_NOT_FOUND(4001, "订单不存在"),
