@@ -46,4 +46,17 @@
         WHERE stock &gt;= #{minStock} AND stock &lt;= #{maxStock}
     </select>
 
+    <!-- 检查商品是否存在库存记录 -->
+    <select id="existsByProductId" parameterType="java.lang.Long" resultType="boolean">
+        SELECT COUNT(1) > 0
+        FROM inventory
+        WHERE product_id = #{productId}
+    </select>
+
+    <!-- 插入库存记录 -->
+    <insert id="insert" parameterType="com.ecommerce.model.entity.Inventory" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO inventory (product_id, stock, low_stock_threshold)
+        VALUES (#{productId}, #{stock}, #{lowStockThreshold})
+    </insert>
+
 </mapper>
