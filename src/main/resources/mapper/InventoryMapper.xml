@@ -59,4 +59,14 @@
         VALUES (#{productId}, #{stock}, #{lowStockThreshold})
     </insert>
 
+    <!-- 查询库存统计信息 -->
+    <select id="selectInventoryStats" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalProducts,
+            SUM(stock) as totalStock,
+            COUNT(CASE WHEN stock &lt;= low_stock_threshold THEN 1 END) as lowStockCount,
+            AVG(stock) as avgStock
+        FROM inventory
+    </select>
+
 </mapper>
