@@ -6,11 +6,14 @@
     <resultMap id="InventoryResultMap" type="com.ecommerce.model.entity.Inventory">
         <id column="id" property="id" jdbcType="BIGINT"/>
         <result column="product_id" property="productId" jdbcType="BIGINT"/>
+        <result column="stock" property="stock" jdbcType="INTEGER"/>
+        <result column="low_stock_threshold" property="lowStockThreshold" jdbcType="INTEGER"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
     </resultMap>
     
-    <!-- 简单查询 -->
+    <!-- 根据商品ID查询库存信息 -->
     <select id="selectByProductId" parameterType="java.lang.Long" resultMap="InventoryResultMap">
-        SELECT id, product_id
+        SELECT id, product_id, stock, low_stock_threshold, update_time
         FROM inventory
         WHERE product_id = #{productId}
     </select>

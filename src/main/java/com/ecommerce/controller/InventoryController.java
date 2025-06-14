@@ -157,9 +157,9 @@ public class InventoryController {
     @PutMapping("/batch-update")
     public Result<Void> batchUpdateInventory(
             @Parameter(description = "商品ID列表，用逗号分隔", required = true, example = "1,2,3")
-            @RequestParam String productIds,
+            @RequestParam("productIds") String productIds,
             @Parameter(description = "对应的库存变化量列表，用逗号分隔", required = true, example = "10,-5,20")
-            @RequestParam String stockChanges) {
+            @RequestParam("stockChanges") String stockChanges) {
         try {
             String[] productIdArray = productIds.split(",");
             String[] stockChangeArray = stockChanges.split(",");
