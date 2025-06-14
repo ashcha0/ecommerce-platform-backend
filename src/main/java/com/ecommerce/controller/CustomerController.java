@@ -100,12 +100,19 @@ public class CustomerController {
         @ApiResponse(responseCode = "404", description = "客户不存在", 
             content = @Content(schema = @Schema(implementation = Result.class)))
     })
-    @PutMapping
-    public Result<CustomerVO> updateCustomer(@Valid @RequestBody CustomerUpdateDTO updateDTO) {
+    @PutMapping("/{id}")
+    public Result<CustomerVO> updateCustomer(@PathVariable("id") @NotNull @Positive Long id,
+                                           @Parameter(description = "客户ID", required = true, example = "1")
+                                           @Valid @RequestBody CustomerUpdateDTO updateDTO) {
         try {
+            // 验证ID有效性
+            if (id <= 0) {
+                return Result.fail(400, "客户ID必须大于0");
+            }
+            updateDTO.setId(id);
             return customerService.updateCustomer(updateDTO);
         } catch (Exception e) {
-            log.error("更新客户信息时发生异常，客户ID: {}", updateDTO.getId(), e);
+            log.error("更新客户信息时发生异常，客户ID: {}", id, e);
             return Result.fail(500, "更新客户信息失败，请稍后重试");
         }
     }
