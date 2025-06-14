@@ -21,5 +21,12 @@
         SET low_stock_threshold = #{threshold}
         WHERE product_id = #{productId}
     </update>
+
+    <update id="updateStock">
+        UPDATE inventory 
+        SET stock = stock + #{stockChange}
+        WHERE product_id = #{productId}
+    </update>
+
     
 </mapper>

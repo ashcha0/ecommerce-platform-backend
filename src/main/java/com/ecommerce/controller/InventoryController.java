@@ -72,9 +72,9 @@ public class InventoryController {
     @PutMapping("/product/{productId}/stock")
     public Result<Void> updateInventory(
             @Parameter(description = "商品ID", required = true, example = "1")
-            @PathVariable @NotNull(message = "商品ID不能为空") @Positive(message = "商品ID必须为正数") Long productId,
+            @PathVariable("productId") @NotNull(message = "商品ID不能为空") @Positive(message = "商品ID必须为正数") Long productId,
             @Parameter(description = "库存变化量，正数为增加，负数为减少", required = true, example = "10")
-            @RequestParam @NotNull(message = "库存变化量不能为空") Integer stockChange) {
+            @RequestParam("stockChange") @NotNull(message = "库存变化量不能为空") Integer stockChange) {
         try {
             inventoryService.updateInventory(productId, stockChange);
             return Result.success();
