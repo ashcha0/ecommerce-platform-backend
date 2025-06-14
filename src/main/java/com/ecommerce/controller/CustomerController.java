@@ -186,7 +186,7 @@ public class CustomerController {
     @GetMapping("/check-username")
     public Result<Boolean> checkUsername(
         @Parameter(description = "用户名") 
-        @RequestParam String username) {
+        @RequestParam("username") String username) {
         try {
             boolean exists = customerService.isUsernameExists(username);
             return Result.success(exists);
