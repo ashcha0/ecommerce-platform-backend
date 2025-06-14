@@ -15,4 +15,11 @@
         WHERE product_id = #{productId}
     </select>
     
+    <!-- 更新低库存阈值 -->
+    <update id="updateLowStockThreshold">
+        UPDATE inventory 
+        SET low_stock_threshold = #{threshold}
+        WHERE product_id = #{productId}
+    </update>
+    
 </mapper>

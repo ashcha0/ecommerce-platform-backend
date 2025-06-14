@@ -97,9 +97,9 @@ public class InventoryController {
     @PutMapping("/product/{productId}/threshold")
     public Result<Void> updateLowStockThreshold(
             @Parameter(description = "商品ID", required = true, example = "1")
-            @PathVariable @NotNull(message = "商品ID不能为空") @Positive(message = "商品ID必须为正数") Long productId,
+            @PathVariable("productId") @NotNull(message = "商品ID不能为空") @Positive(message = "商品ID必须为正数") Long productId,
             @Parameter(description = "低库存阈值", required = true, example = "10")
-            @RequestParam @NotNull(message = "低库存阈值不能为空") @PositiveOrZero(message = "低库存阈值不能为负数") Integer threshold) {
+            @RequestParam("threshold") @NotNull(message = "低库存阈值不能为空") @PositiveOrZero(message = "低库存阈值不能为负数") Integer threshold) {
         try {
             inventoryService.updateLowStockThreshold(productId, threshold);
             return Result.success();
