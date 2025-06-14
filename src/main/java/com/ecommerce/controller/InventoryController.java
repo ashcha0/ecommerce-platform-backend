@@ -249,7 +249,8 @@ public class InventoryController {
     @GetMapping("/exists/{productId}")
     public Result<Boolean> hasInventoryRecord(
             @Parameter(description = "商品ID", required = true, example = "1")
-            @PathVariable @NotNull(message = "商品ID不能为空") @Positive(message = "商品ID必须为正数") Long productId) {
+            @PathVariable("productId") @NotNull(message = "商品ID不能为空") @Positive(message = "商品ID必须为正数") Long productId) {
+
         try {
             boolean exists = inventoryService.hasInventoryRecord(productId);
             return Result.success(exists);
