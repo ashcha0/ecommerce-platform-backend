@@ -69,4 +69,10 @@
         FROM inventory
     </select>
 
+    <!-- 删除库存记录 -->
+    <delete id="deleteByProductId" parameterType="java.lang.Long">
+        DELETE FROM inventory
+        WHERE product_id = #{productId}
+    </delete>
+
 </mapper>
