@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecommerce.mapper.CustomerMapper">
+    
+    <!-- 插入客户 -->
+    <insert id="insert" parameterType="com.ecommerce.model.entity.Customer" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO customer (
+            username, password, real_name, phone, email, address, create_time, update_time
+        ) VALUES (
+            #{username}, #{password}, #{realName}, #{phone}, #{email}, #{address}, #{createTime}, #{updateTime}
+        )
+    </insert>
+    
+    <!-- 更新客户信息 -->
+    <update id="update" parameterType="com.ecommerce.model.entity.Customer">
+        UPDATE customer 
+        <set>
+            <if test="realName != null">
+                real_name = #{realName},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="email != null">
+                email = #{email},
+            </if>
+            <if test="address != null">
+                address = #{address},
+            </if>
+            update_time = #{updateTime}
+        </set>
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 删除客户 -->
+    <delete id="deleteById">
+        DELETE FROM customer WHERE id = #{id}
+    </delete>
+    
+    <!-- 根据ID查询客户 -->
+    <select id="selectById" resultType="com.ecommerce.model.entity.Customer">
+        SELECT id, username, password, real_name as realName, phone, email, address, 
+               create_time as createTime, update_time as updateTime
+        FROM customer 
+        WHERE id = #{id}
+    </select>
+    
+    <!-- 根据用户名查询客户 -->
+    <select id="selectByUsername" resultType="com.ecommerce.model.entity.Customer">
+        SELECT id, username, password, real_name as realName, phone, email, address, 
+               create_time as createTime, update_time as updateTime
+        FROM customer 
+        WHERE username = #{username}
+    </select>
+    
+    <!-- 根据手机号查询客户 -->
+    <select id="selectByPhone" resultType="com.ecommerce.model.entity.Customer">
+        SELECT id, username, password, real_name as realName, phone, email, address, 
+               create_time as createTime, update_time as updateTime
+        FROM customer 
+        WHERE phone = #{phone}
+    </select>
+    
+    <!-- 根据邮箱查询客户 -->
+    <select id="selectByEmail" resultType="com.ecommerce.model.entity.Customer">
+        SELECT id, username, password, real_name as realName, phone, email, address, 
+               create_time as createTime, update_time as updateTime
+        FROM customer 
+        WHERE email = #{email}
+    </select>
+    
+    <!-- 查询所有客户 -->
+    <select id="selectAll" resultType="com.ecommerce.model.entity.Customer">
+        SELECT id, username, password, real_name as realName, phone, email, address, 
+               create_time as createTime, update_time as updateTime
+        FROM customer 
+        ORDER BY create_time DESC
+    </select>
+    
+    <!-- 根据条件分页查询客户 -->
+    <select id="selectByCondition" resultType="com.ecommerce.model.entity.Customer">
+        SELECT id, username, password, real_name as realName, phone, email, address, 
+               create_time as createTime, update_time as updateTime
+        FROM customer
+        <where>
+            <if test="username != null and username != ''">
+                AND username LIKE CONCAT('%', #{username}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                AND phone LIKE CONCAT('%', #{phone}, '%')
+            </if>
+        </where>
+        ORDER BY create_time DESC
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+    
+    <!-- 统计客户总数 -->
+    <select id="countAll" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM customer
+    </select>
+    
+    <!-- 根据条件统计客户数量 -->
+    <select id="countByCondition" resultType="java.lang.Long">
+        SELECT COUNT(*) 
+        FROM customer
+        <where>
+            <if test="username != null and username != ''">
+                AND username LIKE CONCAT('%', #{username}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                AND phone LIKE CONCAT('%', #{phone}, '%')
+            </if>
+        </where>
+    </select>
+    
+</mapper>
