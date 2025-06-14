@@ -81,7 +81,7 @@ public class CustomerController {
     @GetMapping("/{id}")
     public Result<CustomerVO> getCustomer(
         @Parameter(description = "客户ID") 
-        @PathVariable @NotNull @Positive Long id) {
+        @PathVariable("id") @NotNull @Positive Long id) {
         try {
             CustomerVO customer = customerService.getCustomerById(id);
             return Result.success(customer);
@@ -120,7 +120,7 @@ public class CustomerController {
     @DeleteMapping("/{id}")
     public Result<String> deleteCustomer(
         @Parameter(description = "客户ID") 
-        @PathVariable @NotNull @Positive Long id) {
+        @PathVariable("id") @NotNull @Positive Long id) {
         try {
             return customerService.deleteCustomer(id);
         } catch (Exception e) {
