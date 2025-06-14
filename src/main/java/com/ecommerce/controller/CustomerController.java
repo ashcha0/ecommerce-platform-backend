@@ -200,7 +200,7 @@ public class CustomerController {
     @GetMapping("/check-phone")
     public Result<Boolean> checkPhone(
         @Parameter(description = "手机号") 
-        @RequestParam String phone) {
+        @RequestParam("phone") String phone) {
         try {
             boolean exists = customerService.isPhoneExists(phone);
             return Result.success(exists);
@@ -214,7 +214,7 @@ public class CustomerController {
     @GetMapping("/check-email")
     public Result<Boolean> checkEmail(
         @Parameter(description = "邮箱") 
-        @RequestParam String email) {
+        @RequestParam("email") String email) {
         try {
             boolean exists = customerService.isEmailExists(email);
             return Result.success(exists);
