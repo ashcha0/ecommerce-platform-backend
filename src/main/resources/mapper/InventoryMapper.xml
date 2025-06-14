@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecommerce.mapper.InventoryMapper">
+    
+    <!-- 结果映射 -->
+    <resultMap id="InventoryResultMap" type="com.ecommerce.model.entity.Inventory">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="product_id" property="productId" jdbcType="BIGINT"/>
+    </resultMap>
+    
+    <!-- 简单查询 -->
+    <select id="selectByProductId" parameterType="java.lang.Long" resultMap="InventoryResultMap">
+        SELECT id, product_id
+        FROM inventory
+        WHERE product_id = #{productId}
+    </select>
+    
+</mapper>
