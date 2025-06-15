@@ -224,8 +224,8 @@ public class InventoryServiceImpl implements InventoryService {
             Inventory inventory = inventoryMapper.selectByProductId(queryDTO.getProductId());
             inventoryList = inventory != null ? List.of(inventory) : List.of();
         } else {
-            // 查询所有库存（这里可能需要添加一个查询所有的方法）
-            inventoryList = inventoryMapper.selectLowStockProducts(); // 临时使用低库存查询
+            // 查询所有库存
+            inventoryList = inventoryMapper.selectAll();
         }
         
         // 转换为VO对象

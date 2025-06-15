@@ -86,4 +86,10 @@ public interface InventoryMapper {
      * @return 是否存在
      */
     boolean existsByProductId(Long productId);
+    
+    /**
+     * 查询所有库存记录
+     * @return 所有库存信息列表
+     */
+    List<Inventory> selectAll();
 }

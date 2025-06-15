@@ -74,5 +74,12 @@
         DELETE FROM inventory
         WHERE product_id = #{productId}
     </delete>
+    
+    <!-- 查询所有库存记录 -->
+    <select id="selectAll" resultMap="InventoryResultMap">
+        SELECT id, product_id, stock, low_stock_threshold, update_time
+        FROM inventory
+        ORDER BY update_time DESC
+    </select>
 
 </mapper>
