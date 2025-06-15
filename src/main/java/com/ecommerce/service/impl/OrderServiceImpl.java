@@ -267,12 +267,12 @@ public class OrderServiceImpl implements OrderService {
                 }
                 break;
             case PAID:
-                if (newStatus != Order.OrderStatus.SHIPPED && newStatus != Order.OrderStatus.CANCELLED) {
+                if (newStatus != Order.OrderStatus.SHIPPING && newStatus != Order.OrderStatus.CANCELLED) {
                     throw new BusinessException(ErrorCode.PARAM_ERROR, "订单状态转换不合法");
                 }
                 break;
             case SHIPPING:
-                if (newStatus != Order.OrderStatus.DELIVERED) {
+                if (newStatus != Order.OrderStatus.COMPLETED && newStatus != Order.OrderStatus.CANCELLED) {
                     throw new BusinessException(ErrorCode.PARAM_ERROR, "订单状态转换不合法");
                 }
                 break;
