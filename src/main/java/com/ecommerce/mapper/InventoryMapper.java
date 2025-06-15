@@ -98,4 +98,20 @@ public interface InventoryMapper {
      * @return 所有库存信息列表
      */
     List<Inventory> selectAll();
+    
+    /**
+     * 锁定库存
+     * @param productId 商品ID
+     * @param quantity 锁定数量
+     * @return 影响行数
+     */
+    int lockStock(@Param("productId") Long productId, @Param("quantity") Integer quantity);
+    
+    /**
+     * 释放锁定的库存
+     * @param productId 商品ID
+     * @param quantity 释放数量
+     * @return 影响行数
+     */
+    int releaseStock(@Param("productId") Long productId, @Param("quantity") Integer quantity);
 }

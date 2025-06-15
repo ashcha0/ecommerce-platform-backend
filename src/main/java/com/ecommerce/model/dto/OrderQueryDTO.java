@@ -12,6 +12,7 @@ public class OrderQueryDTO {
     private LocalDateTime endTime;
     private int pageNum = 1;
     private int pageSize = 20;
+    private int offset;
 
     public enum OrderStatus {
         CREATED, PAID, SHIPPING, COMPLETED, CANCELLED

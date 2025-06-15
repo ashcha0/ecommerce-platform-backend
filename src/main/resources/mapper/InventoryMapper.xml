@@ -7,13 +7,14 @@
         <id column="id" property="id" jdbcType="BIGINT"/>
         <result column="product_id" property="productId" jdbcType="BIGINT"/>
         <result column="stock" property="stock" jdbcType="INTEGER"/>
+        <result column="locked_stock" property="lockedStock" jdbcType="INTEGER"/>
         <result column="low_stock_threshold" property="lowStockThreshold" jdbcType="INTEGER"/>
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
     </resultMap>
     
     <!-- 根据商品ID查询库存信息 -->
     <select id="selectByProductId" parameterType="java.lang.Long" resultMap="InventoryResultMap">
-        SELECT id, product_id, stock, low_stock_threshold, update_time
+        SELECT id, product_id, stock, locked_stock, low_stock_threshold, update_time
         FROM inventory
         WHERE product_id = #{productId}
     </select>
@@ -34,21 +35,21 @@
 
     <!-- 查询低库存商品列表 -->
     <select id="selectLowStockProducts" resultMap="InventoryResultMap">
-        SELECT id, product_id, stock, low_stock_threshold, update_time
+        SELECT id, product_id, stock, locked_stock, low_stock_threshold, update_time
         FROM inventory
         WHERE stock &lt;= low_stock_threshold
     </select>
     
     <!-- 查询非低库存商品列表（库存充足的商品） -->
     <select id="selectNonLowStockProducts" resultMap="InventoryResultMap">
-        SELECT id, product_id, stock, low_stock_threshold, update_time
+        SELECT id, product_id, stock, locked_stock, low_stock_threshold, update_time
         FROM inventory
         WHERE stock &gt; low_stock_threshold
     </select>
 
     <!-- 根据库存范围查询库存信息 -->
     <select id="selectByStockRange" resultMap="InventoryResultMap">
-        SELECT id, product_id, stock, low_stock_threshold, update_time
+        SELECT id, product_id, stock, locked_stock, low_stock_threshold, update_time
         FROM inventory
         <where>
             <if test="minStock != null">
@@ -69,8 +70,8 @@
 
     <!-- 插入库存记录 -->
     <insert id="insert" parameterType="com.ecommerce.model.entity.Inventory" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO inventory (product_id, stock, low_stock_threshold)
-        VALUES (#{productId}, #{stock}, #{lowStockThreshold})
+        INSERT INTO inventory (product_id, stock, locked_stock, low_stock_threshold)
+        VALUES (#{productId}, #{stock}, COALESCE(#{lockedStock}, 0), #{lowStockThreshold})
     </insert>
 
     <!-- 查询库存统计信息 -->
@@ -91,9 +92,27 @@
     
     <!-- 查询所有库存记录 -->
     <select id="selectAll" resultMap="InventoryResultMap">
-        SELECT id, product_id, stock, low_stock_threshold, update_time
+        SELECT id, product_id, stock, locked_stock, low_stock_threshold, update_time
         FROM inventory
         ORDER BY update_time DESC
     </select>
+    
+    <!-- 锁定库存 -->
+    <update id="lockStock">
+        UPDATE inventory 
+        SET locked_stock = COALESCE(locked_stock, 0) + #{quantity},
+            update_time = CURRENT_TIMESTAMP
+        WHERE product_id = #{productId}
+          AND (stock - COALESCE(locked_stock, 0)) &gt;= #{quantity}
+    </update>
+    
+    <!-- 释放锁定的库存 -->
+    <update id="releaseStock">
+        UPDATE inventory 
+        SET locked_stock = COALESCE(locked_stock, 0) - #{quantity},
+            update_time = CURRENT_TIMESTAMP
+        WHERE product_id = #{productId}
+          AND COALESCE(locked_stock, 0) &gt;= #{quantity}
+    </update>
 
 </mapper>

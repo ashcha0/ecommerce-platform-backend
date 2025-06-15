@@ -247,6 +247,73 @@ public class InventoryServiceImpl implements InventoryService {
     }
     
     @Override
+    public boolean checkStock(Long productId, Integer quantity) {
+        if (productId == null || quantity == null || quantity <= 0) {
+            return false;
+        }
+        
+        Inventory inventory = inventoryMapper.selectByProductId(productId);
+        if (inventory == null) {
+            return false;
+        }
+        
+        return inventory.hasEnoughStock(quantity);
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void lockStock(Long productId, Integer quantity) {
+        if (productId == null || quantity == null || quantity <= 0) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR, "参数不能为空或无效");
+        }
+        
+        Inventory inventory = inventoryMapper.selectByProductId(productId);
+        if (inventory == null) {
+            throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND, "商品库存信息不存在");
+        }
+        
+        // 检查可用库存是否充足
+        if (!inventory.hasEnoughStock(quantity)) {
+            throw new BusinessException(ErrorCode.PRODUCT_INSUFFICIENT_STOCK, "可用库存不足，无法锁定");
+        }
+        
+        // 锁定库存
+        int result = inventoryMapper.lockStock(productId, quantity);
+        if (result <= 0) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "库存锁定失败");
+        }
+        
+        log.info("商品ID: {} 库存锁定成功，锁定数量: {}", productId, quantity);
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void releaseStock(Long productId, Integer quantity) {
+        if (productId == null || quantity == null || quantity <= 0) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR, "参数不能为空或无效");
+        }
+        
+        Inventory inventory = inventoryMapper.selectByProductId(productId);
+        if (inventory == null) {
+            throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND, "商品库存信息不存在");
+        }
+        
+        // 检查锁定库存是否充足
+        Integer lockedStock = inventory.getLockedStock() != null ? inventory.getLockedStock() : 0;
+        if (lockedStock < quantity) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "锁定库存不足，无法释放");
+        }
+        
+        // 释放库存
+        int result = inventoryMapper.releaseStock(productId, quantity);
+        if (result <= 0) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "库存释放失败");
+        }
+        
+        log.info("商品ID: {} 库存释放成功，释放数量: {}", productId, quantity);
+    }
+    
+    @Override
     public boolean hasInventoryRecord(Long productId) {
         if (productId == null) {
             return false;

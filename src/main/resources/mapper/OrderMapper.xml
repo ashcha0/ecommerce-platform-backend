@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecommerce.mapper.OrderMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.ecommerce.model.entity.Order">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="order_no" property="orderNo" jdbcType="VARCHAR"/>
+        <result column="customer_id" property="customerId" jdbcType="BIGINT"/>
+        <result column="order_time" property="orderTime" jdbcType="TIMESTAMP"/>
+        <result column="total_amount" property="totalAmount" jdbcType="DECIMAL"/>
+        <result column="status" property="status" jdbcType="VARCHAR" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 订单详情视图结果映射 -->
+    <resultMap id="OrderDetailsViewResultMap" type="com.ecommerce.model.view.OrderDetailsView">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="order_no" property="orderNo" jdbcType="VARCHAR"/>
+        <result column="customer_id" property="customerId" jdbcType="BIGINT"/>
+        <result column="customer_name" property="customerName" jdbcType="VARCHAR"/>
+        <result column="order_time" property="orderTime" jdbcType="TIMESTAMP"/>
+        <result column="total_amount" property="totalAmount" jdbcType="DECIMAL"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        id, order_no, customer_id, order_time, total_amount, status, create_time, update_time
+    </sql>
+
+    <!-- 插入订单 -->
+    <insert id="insert" parameterType="com.ecommerce.model.entity.Order" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `order` (
+            order_no, customer_id, order_time, total_amount, status, create_time, update_time
+        ) VALUES (
+            #{orderNo}, #{customerId}, #{orderTime}, #{totalAmount}, #{status}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <!-- 更新订单状态 -->
+    <update id="updateStatus">
+        UPDATE `order`
+        SET status = #{status},
+            update_time = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据ID查询订单 -->
+    <select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM `order`
+        WHERE id = #{id}
+    </select>
+
+    <!-- 根据订单号查询订单 -->
+    <select id="selectByOrderNo" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM `order`
+        WHERE order_no = #{orderNo}
+    </select>
+
+    <!-- 根据客户ID查询订单列表 -->
+    <select id="selectByCustomer" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM `order`
+        WHERE customer_id = #{customerId}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 分页查询订单列表 -->
+    <select id="searchOrders" parameterType="com.ecommerce.model.dto.OrderQueryDTO" resultMap="OrderDetailsViewResultMap">
+        SELECT
+            o.id,
+            o.order_no,
+            o.customer_id,
+            c.real_name as customer_name,
+            o.order_time,
+            o.total_amount,
+            o.status,
+            o.create_time,
+            o.update_time
+        FROM `order` o
+        LEFT JOIN customer c ON o.customer_id = c.id
+        <where>
+            <if test="customerId != null">
+                AND o.customer_id = #{customerId}
+            </if>
+            <if test="status != null and status != ''">
+                AND o.status = #{status}
+            </if>
+            <if test="orderNo != null and orderNo != ''">
+                AND o.order_no LIKE CONCAT('%', #{orderNo}, '%')
+            </if>
+            <if test="startTime != null">
+                AND o.order_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND o.order_time &lt;= #{endTime}
+            </if>
+            <if test="startTime != null">
+                AND o.order_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND o.order_time &lt;= #{endTime}
+            </if>
+        </where>
+        ORDER BY o.create_time DESC
+        <if test="pageNum != null and pageSize != null">
+            LIMIT #{pageSize} OFFSET #{offset}
+        </if>
+    </select>
+    
+    <!-- 查询订单总数 -->
+    <select id="countOrders" parameterType="com.ecommerce.model.dto.OrderQueryDTO" resultType="long">
+        SELECT COUNT(*)
+        FROM `order` o
+        LEFT JOIN customer c ON o.customer_id = c.id
+        <where>
+            <if test="customerId != null">
+                AND o.customer_id = #{customerId}
+            </if>
+            <if test="status != null and status != ''">
+                AND o.status = #{status}
+            </if>
+            <if test="orderNo != null and orderNo != ''">
+                AND o.order_no LIKE CONCAT('%', #{orderNo}, '%')
+            </if>
+            <if test="startTime != null">
+                AND o.order_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND o.order_time &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询订单详情 -->
+    <select id="selectOrderDetails" parameterType="java.lang.Long" resultMap="OrderDetailsViewResultMap">
+        SELECT
+            o.id,
+            o.order_no,
+            o.customer_id,
+            c.real_name as customer_name,
+            o.order_time,
+            o.total_amount,
+            o.status,
+            o.create_time,
+            o.update_time
+        FROM `order` o
+        LEFT JOIN customer c ON o.customer_id = c.id
+        WHERE o.id = #{orderId}
+    </select>
+
+</mapper>

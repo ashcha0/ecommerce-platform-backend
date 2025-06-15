@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecommerce.mapper.OrderItemMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.ecommerce.model.entity.OrderItem">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="order_id" property="orderId" jdbcType="BIGINT"/>
+        <result column="product_id" property="productId" jdbcType="BIGINT"/>
+        <result column="quantity" property="quantity" jdbcType="INTEGER"/>
+        <result column="unit_price" property="unitPrice" jdbcType="DECIMAL"/>
+        <result column="item_amount" property="itemAmount" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        id, order_id, product_id, quantity, unit_price, item_amount
+    </sql>
+
+    <!-- 插入订单项 -->
+    <insert id="insert" parameterType="com.ecommerce.model.entity.OrderItem" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO order_item (
+            order_id, product_id, quantity, unit_price, item_amount
+        ) VALUES (
+            #{orderId}, #{productId}, #{quantity}, #{unitPrice}, #{itemAmount}
+        )
+    </insert>
+
+    <!-- 根据ID查询订单项 -->
+    <select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM order_item
+        WHERE id = #{id}
+    </select>
+
+    <!-- 根据订单ID查询订单项列表 -->
+    <select id="selectByOrderId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM order_item
+        WHERE order_id = #{orderId}
+        ORDER BY id
+    </select>
+
+    <!-- 根据商品ID查询订单项列表 -->
+    <select id="selectByProductId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM order_item
+        WHERE product_id = #{productId}
+        ORDER BY id DESC
+    </select>
+
+    <!-- 更新订单项数量 -->
+    <update id="updateQuantity">
+        UPDATE order_item
+        SET quantity = #{quantity},
+            item_amount = unit_price * #{quantity}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除订单项 -->
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM order_item
+        WHERE id = #{id}
+    </delete>
+
+    <!-- 根据订单ID删除订单项 -->
+    <delete id="deleteByOrderId" parameterType="java.lang.Long">
+        DELETE FROM order_item
+        WHERE order_id = #{orderId}
+    </delete>
+
+    <!-- 批量插入订单项 -->
+    <insert id="batchInsert" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO order_item (
+            order_id, product_id, quantity, unit_price, item_amount
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.orderId}, #{item.productId}, #{item.quantity}, 
+                #{item.unitPrice}, #{item.itemAmount}
+            )
+        </foreach>
+    </insert>
+
+</mapper>

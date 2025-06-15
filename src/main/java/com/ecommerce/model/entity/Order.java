@@ -19,7 +19,9 @@ public class Order {
     public enum OrderStatus {
         CREATED("已创建"),
         PAID("已支付"),
+        SHIPPED("已发货"),
         SHIPPING("配送中"),
+        DELIVERED("已送达"),
         COMPLETED("已完成"),
         CANCELLED("已取消");
 
