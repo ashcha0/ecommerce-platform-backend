@@ -92,6 +92,7 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}/delivery")
+    //TODO: 配送管理功能尚未开发
     @Operation(summary = "查询订单配送信息", description = "获取订单的配送信息")
     public Result<OrderDetailVO.DeliveryVO> getOrderDeliveryInfo(
             @Parameter(description = "订单ID") @PathVariable("orderId") @NotNull(message = "订单ID不能为空") @Positive(message = "订单ID必须为正数") Long orderId) {
