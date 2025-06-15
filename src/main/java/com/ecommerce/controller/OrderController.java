@@ -65,7 +65,7 @@ public class OrderController {
     public Result<Void> updateOrderStatus(
         @Parameter(description = "订单ID")
         @PathVariable("orderId") @NotNull(message = "订单ID不能为空") @Positive(message = "订单ID必须为正数") Long orderId,
-        @Parameter(description = "订单状态") @RequestParam String status) {
+        @Parameter(description = "订单状态") @RequestParam("status") String status) {
         orderService.updateOrderStatus(orderId, status);
         return Result.success(null, "订单状态更新成功");
     }

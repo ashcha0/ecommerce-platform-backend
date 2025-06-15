@@ -4,13 +4,14 @@ import com.ecommerce.model.dto.OrderQueryDTO;
 import com.ecommerce.model.entity.Order;
 import com.ecommerce.model.view.OrderDetailsView;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 @Mapper
 public interface OrderMapper {
     int insert(Order order);
 
-    int updateStatus(Long id, String status);
+    int updateStatus(@Param("id") Long id, @Param("status") String status);
 
     Order selectById(Long id);
 
