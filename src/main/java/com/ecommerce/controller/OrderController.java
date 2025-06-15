@@ -103,7 +103,8 @@ public class OrderController {
     @GetMapping("/stats/customer/{customerId}")
     @Operation(summary = "客户订单统计", description = "统计指定客户的订单信息")
     public Result<Map<String, Object>> getCustomerOrderStats(
-            @Parameter(description = "客户ID") @PathVariable Long customerId) {
+            @Parameter(description = "客户ID") 
+            @PathVariable("customerId") @NotNull(message = "客户ID不能为空") @Positive(message = "客户ID必须为正数") Long customerId) {
         // TODO: 实现客户订单统计逻辑
         return Result.success(Map.of("message", "功能开发中"));
     }
