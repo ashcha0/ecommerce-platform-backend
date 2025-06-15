@@ -42,7 +42,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(rollbackFor = Exception.class)
     public Order createOrder(OrderCreateDTO dto) {
         log.info("开始创建订单，客户ID: {}", dto.getCustomerId());
-        
+
         // 1. 验证订单项不为空
         if (dto.getItems() == null || dto.getItems().isEmpty()) {
             throw new BusinessException(ErrorCode.PARAM_ERROR, "订单项不能为空");
@@ -50,47 +50,47 @@ public class OrderServiceImpl implements OrderService {
 
         // 2. 生成订单号
         String orderNo = generateOrderNo();
-        
+
         // 3. 计算订单总金额并验证库存
         BigDecimal totalAmount = BigDecimal.ZERO;
         List<OrderItem> orderItems = new ArrayList<>();
-        
+
         for (OrderCreateDTO.OrderItemDTO itemDTO : dto.getItems()) {
             // 查询商品信息
             Product product = productMapper.selectById(itemDTO.getProductId());
             if (product == null) {
                 throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND, "商品不存在");
             }
-            
+
             // 验证库存
             boolean stockAvailable = inventoryService.checkStock(itemDTO.getProductId(), itemDTO.getQuantity());
             if (!stockAvailable) {
                 throw new BusinessException(ErrorCode.PRODUCT_INSUFFICIENT_STOCK, "商品库存不足");
             }
-            
+
             // 创建订单项
             OrderItem orderItem = new OrderItem();
             orderItem.setProductId(itemDTO.getProductId());
             orderItem.setQuantity(itemDTO.getQuantity());
             orderItem.setUnitPrice(product.getPrice());
             orderItem.setItemAmount(product.getPrice().multiply(BigDecimal.valueOf(itemDTO.getQuantity())));
-            
+
             orderItems.add(orderItem);
             totalAmount = totalAmount.add(orderItem.getItemAmount());
         }
-        
+
         // 4. 创建订单
         Order order = Order.create(orderNo, dto.getCustomerId(), totalAmount);
         int result = orderMapper.insert(order);
         if (result <= 0) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "订单创建失败");
         }
-        
+
         // 5. 创建订单项
         for (OrderItem orderItem : orderItems) {
             orderItem.setOrderId(order.getId());
             orderItemMapper.insert(orderItem);
-            
+
             // 6. 锁定库存
             try {
                 inventoryService.lockStock(orderItem.getProductId(), orderItem.getQuantity());
@@ -99,7 +99,7 @@ public class OrderServiceImpl implements OrderService {
                 throw new BusinessException(ErrorCode.INVENTORY_LOCK_FAILED, "库存锁定失败");
             }
         }
-        
+
         log.info("订单创建成功，订单号: {}, 订单ID: {}", orderNo, order.getId());
         return order;
     }
@@ -107,16 +107,16 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDetailVO getOrderDetail(Long orderId) {
         log.info("查询订单详情，订单ID: {}", orderId);
-        
+
         // 查询订单基本信息
         Order order = orderMapper.selectById(orderId);
         if (order == null) {
             throw new BusinessException(ErrorCode.ORDER_NOT_FOUND, "订单不存在");
         }
-        
+
         // 查询订单项
         List<OrderItem> orderItems = orderItemMapper.selectByOrderId(orderId);
-        
+
         // 构建返回对象
         OrderDetailVO orderDetailVO = new OrderDetailVO();
         orderDetailVO.setId(order.getId());
@@ -127,12 +127,12 @@ public class OrderServiceImpl implements OrderService {
         orderDetailVO.setStatus(order.getStatus().name());
         orderDetailVO.setCreateTime(order.getCreateTime());
         orderDetailVO.setUpdateTime(order.getUpdateTime());
-        
+
         // 设置订单项信息
         List<OrderDetailVO.OrderItemVO> itemVOs = new ArrayList<>();
         for (OrderItem item : orderItems) {
             Product product = productMapper.selectById(item.getProductId());
-            
+
             OrderDetailVO.OrderItemVO itemVO = new OrderDetailVO.OrderItemVO();
             itemVO.setId(item.getId());
             itemVO.setProductId(item.getProductId());
@@ -140,11 +140,11 @@ public class OrderServiceImpl implements OrderService {
             itemVO.setQuantity(item.getQuantity());
             itemVO.setUnitPrice(item.getUnitPrice());
             itemVO.setItemAmount(item.getItemAmount());
-            
+
             itemVOs.add(itemVO);
         }
         orderDetailVO.setItems(itemVOs);
-        
+
         return orderDetailVO;
     }
 
@@ -152,27 +152,27 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(rollbackFor = Exception.class)
     public void cancelOrder(Long orderId) {
         log.info("取消订单，订单ID: {}", orderId);
-        
+
         Order order = orderMapper.selectById(orderId);
         if (order == null) {
             throw new BusinessException(ErrorCode.ORDER_NOT_FOUND, "订单不存在");
         }
-        
+
         // 检查订单状态
         if (order.getStatus() == Order.OrderStatus.PAID) {
             throw new BusinessException(ErrorCode.ORDER_ALREADY_PAID, "已支付订单无法取消");
         }
-        
+
         if (order.getStatus() == Order.OrderStatus.CANCELLED) {
             throw new BusinessException(ErrorCode.ORDER_ALREADY_CANCELLED, "订单已取消");
         }
-        
+
         // 更新订单状态
         int result = orderMapper.updateStatus(orderId, Order.OrderStatus.CANCELLED.name());
         if (result <= 0) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "订单取消失败");
         }
-        
+
         // 释放库存
         List<OrderItem> orderItems = orderItemMapper.selectByOrderId(orderId);
         for (OrderItem item : orderItems) {
@@ -182,7 +182,7 @@ public class OrderServiceImpl implements OrderService {
                 log.error("库存释放失败，商品ID: {}, 数量: {}", item.getProductId(), item.getQuantity(), e);
             }
         }
-        
+
         log.info("订单取消成功，订单ID: {}", orderId);
     }
 
@@ -190,43 +190,43 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(rollbackFor = Exception.class)
     public void updateOrderStatus(Long orderId, String status) {
         log.info("更新订单状态，订单ID: {}, 状态: {}", orderId, status);
-        
+
         Order order = orderMapper.selectById(orderId);
         if (order == null) {
             throw new BusinessException(ErrorCode.ORDER_NOT_FOUND, "订单不存在");
         }
-        
+
         // 验证状态转换的合法性
         validateStatusTransition(order.getStatus(), Order.OrderStatus.valueOf(status));
-        
+
         int result = orderMapper.updateStatus(orderId, status);
         if (result <= 0) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "订单状态更新失败");
         }
-        
+
         log.info("订单状态更新成功，订单ID: {}, 新状态: {}", orderId, status);
     }
 
     @Override
     public PageResult<OrderDetailsView> searchOrders(OrderQueryDTO queryDTO) {
         log.info("分页查询订单列表，查询条件: {}", queryDTO);
-        
+
         // 计算分页偏移量
         int offset = (queryDTO.getPageNum() - 1) * queryDTO.getPageSize();
         queryDTO.setOffset(offset);
-        
+
         List<OrderDetailsView> orders = orderMapper.searchOrders(queryDTO);
-        
+
         // 查询总数
         Long total = orderMapper.countOrders(queryDTO);
-        
+
         // 构建PageInfo对象
         PageInfo<OrderDetailsView> pageInfo = new PageInfo<>(orders);
         pageInfo.setTotal(total);
         pageInfo.setPageNum(queryDTO.getPageNum());
         pageInfo.setPageSize(queryDTO.getPageSize());
         pageInfo.setPages((int) Math.ceil((double) total / queryDTO.getPageSize()));
-        
+
         // 返回PageResult
         return PageResult.success(pageInfo);
     }
@@ -234,17 +234,17 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDetailVO.DeliveryVO getOrderDeliveryInfo(Long orderId) {
         log.info("查询订单配送信息，订单ID: {}", orderId);
-        
+
         Order order = orderMapper.selectById(orderId);
         if (order == null) {
             throw new BusinessException(ErrorCode.ORDER_NOT_FOUND, "订单不存在");
         }
-        
+
         // TODO: 实现配送信息查询逻辑
         OrderDetailVO.DeliveryVO deliveryVO = new OrderDetailVO.DeliveryVO();
         deliveryVO.setOrderId(orderId);
         deliveryVO.setStatus("待配送");
-        
+
         return deliveryVO;
     }
 

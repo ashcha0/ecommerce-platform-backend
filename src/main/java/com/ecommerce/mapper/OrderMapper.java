@@ -21,13 +21,15 @@ public interface OrderMapper {
 
     /**
      * 查询订单列表
+     * 
      * @param queryDTO 查询条件
      * @return 订单详情视图列表
      */
     List<OrderDetailsView> searchOrders(OrderQueryDTO queryDTO);
-    
+
     /**
      * 查询订单总数
+     * 
      * @param queryDTO 查询条件
      * @return 订单总数
      */
@@ -35,6 +37,7 @@ public interface OrderMapper {
 
     /**
      * 查询订单详情
+     * 
      * @param orderId 订单ID
      * @return 订单详情视图
      */
