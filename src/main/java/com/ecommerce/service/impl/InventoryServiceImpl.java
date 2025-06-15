@@ -216,6 +216,9 @@ public class InventoryServiceImpl implements InventoryService {
         if (queryDTO.getIsLowStock() != null && queryDTO.getIsLowStock()) {
             // 查询低库存商品
             inventoryList = inventoryMapper.selectLowStockProducts();
+        } else if (queryDTO.getIsLowStock() != null && !queryDTO.getIsLowStock()) {
+            // 查询非低库存商品（库存充足的商品）
+            inventoryList = inventoryMapper.selectNonLowStockProducts();
         } else if (queryDTO.getMinStock() != null || queryDTO.getMaxStock() != null) {
             // 按库存范围查询
             inventoryList = inventoryMapper.selectByStockRange(queryDTO.getMinStock(), queryDTO.getMaxStock());

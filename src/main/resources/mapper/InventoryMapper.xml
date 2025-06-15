@@ -38,6 +38,13 @@
         FROM inventory
         WHERE stock &lt;= low_stock_threshold
     </select>
+    
+    <!-- 查询非低库存商品列表（库存充足的商品） -->
+    <select id="selectNonLowStockProducts" resultMap="InventoryResultMap">
+        SELECT id, product_id, stock, low_stock_threshold, update_time
+        FROM inventory
+        WHERE stock &gt; low_stock_threshold
+    </select>
 
     <!-- 根据库存范围查询库存信息 -->
     <select id="selectByStockRange" resultMap="InventoryResultMap">
