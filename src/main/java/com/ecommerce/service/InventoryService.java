@@ -47,6 +47,28 @@ public interface InventoryService {
     PageResult<InventoryVO> queryInventory(InventoryQueryDTO queryDTO);
     
     /**
+     * 检查库存是否充足
+     * @param productId 商品ID
+     * @param quantity 需要的数量
+     * @return 是否有足够库存
+     */
+    boolean checkStock(Long productId, Integer quantity);
+    
+    /**
+     * 锁定库存
+     * @param productId 商品ID
+     * @param quantity 锁定数量
+     */
+    void lockStock(Long productId, Integer quantity);
+    
+    /**
+     * 释放锁定的库存
+     * @param productId 商品ID
+     * @param quantity 释放数量
+     */
+    void releaseStock(Long productId, Integer quantity);
+    
+    /**
      * 获取库存统计信息
      */
     Map<String, Object> getInventoryStats();

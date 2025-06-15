@@ -12,10 +12,14 @@ import java.util.List;
 
 @Data
 public class OrderDetailVO {
+    private Long id;
     private String orderNo;
+    private Long customerId;
     private BigDecimal totalAmount;
     private String status;
     private LocalDateTime orderTime;
+    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
     private CustomerVO customer;
     private DeliveryVO delivery;
     private List<OrderItemVO> items;
@@ -39,11 +43,15 @@ public class OrderDetailVO {
 
     @Data
     public static class DeliveryVO {
+        private Long orderId;
         private String trackingNo;
         private String shipper;
         private String status;
         private LocalDateTime shipTime;
         private LocalDateTime deliveryTime;
+
+        public DeliveryVO() {
+        }
 
         public DeliveryVO(Delivery delivery) {
             this.trackingNo = delivery.getTrackingNo();
@@ -56,13 +64,18 @@ public class OrderDetailVO {
 
     @Data
     public static class OrderItemVO {
+        private Long id;
         private Long productId;
         private String productName;
         private Integer quantity;
         private BigDecimal unitPrice;
         private BigDecimal itemAmount;
 
+        public OrderItemVO() {
+        }
+
         public OrderItemVO(OrderItem item, String productName) {
+            this.id = item.getId();
             this.productId = item.getProductId();
             this.productName = productName;
             this.quantity = item.getQuantity();

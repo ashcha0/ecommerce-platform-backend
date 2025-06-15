@@ -24,6 +24,6 @@ public class OrderDetailsView {
 
     // 解析商品列表
     public String[] getProductList() {
-        return products.split(";");
+        return products != null ? products.split(";") : new String[0];
     }
 }
