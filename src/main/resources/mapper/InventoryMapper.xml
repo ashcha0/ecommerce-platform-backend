@@ -38,12 +38,26 @@
         FROM inventory
         WHERE stock &lt;= low_stock_threshold
     </select>
+    
+    <!-- 查询非低库存商品列表（库存充足的商品） -->
+    <select id="selectNonLowStockProducts" resultMap="InventoryResultMap">
+        SELECT id, product_id, stock, low_stock_threshold, update_time
+        FROM inventory
+        WHERE stock &gt; low_stock_threshold
+    </select>
 
     <!-- 根据库存范围查询库存信息 -->
     <select id="selectByStockRange" resultMap="InventoryResultMap">
         SELECT id, product_id, stock, low_stock_threshold, update_time
         FROM inventory
-        WHERE stock &gt;= #{minStock} AND stock &lt;= #{maxStock}
+        <where>
+            <if test="minStock != null">
+                AND stock &gt;= #{minStock}
+            </if>
+            <if test="maxStock != null">
+                AND stock &lt;= #{maxStock}
+            </if>
+        </where>
     </select>
 
     <!-- 检查商品是否存在库存记录 -->
@@ -74,5 +88,12 @@
         DELETE FROM inventory
         WHERE product_id = #{productId}
     </delete>
+    
+    <!-- 查询所有库存记录 -->
+    <select id="selectAll" resultMap="InventoryResultMap">
+        SELECT id, product_id, stock, low_stock_threshold, update_time
+        FROM inventory
+        ORDER BY update_time DESC
+    </select>
 
 </mapper>

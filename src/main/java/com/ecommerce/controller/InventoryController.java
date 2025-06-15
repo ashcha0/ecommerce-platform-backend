@@ -9,6 +9,9 @@ import com.ecommerce.model.entity.Inventory;
 import com.ecommerce.model.vo.InventoryVO;
 import com.ecommerce.service.InventoryService;
 import com.ecommerce.common.util.PageUtils;
+import com.ecommerce.common.exception.BusinessException;
+import java.util.List;
+import java.util.ArrayList;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -156,27 +159,56 @@ public class InventoryController {
                     content = @Content(schema = @Schema(implementation = Result.class)))
     })
     @PutMapping("/batch-update")
-    public Result<Void> batchUpdateInventory(
+    public Result<String> batchUpdateInventory(
             @Parameter(description = "商品ID列表，用逗号分隔", required = true, example = "1,2,3")
             @RequestParam("productIds") String productIds,
             @Parameter(description = "对应的库存变化量列表，用逗号分隔", required = true, example = "10,-5,20")
             @RequestParam("stockChanges") String stockChanges) {
+        log.info("开始批量更新库存，商品IDs: {}, 库存变化: {}", productIds, stockChanges);
+        
         try {
             String[] productIdArray = productIds.split(",");
             String[] stockChangeArray = stockChanges.split(",");
+            
+            log.info("解析后的商品ID数量: {}, 库存变化数量: {}", productIdArray.length, stockChangeArray.length);
             
             if (productIdArray.length != stockChangeArray.length) {
                 return Result.fail(400, "商品ID数量与库存变化量数量不匹配");
             }
             
+            List<String> successList = new ArrayList<>();
+            List<String> failList = new ArrayList<>();
+            
             for (int i = 0; i < productIdArray.length; i++) {
-                Long productId = Long.parseLong(productIdArray[i].trim());
-                Integer stockChange = Integer.parseInt(stockChangeArray[i].trim());
-                inventoryService.updateInventory(productId, stockChange);
+                try {
+                    Long productId = Long.parseLong(productIdArray[i].trim());
+                    Integer stockChange = Integer.parseInt(stockChangeArray[i].trim());
+                    log.info("正在处理商品ID: {}, 库存变化: {}", productId, stockChange);
+                    
+                    inventoryService.updateInventory(productId, stockChange);
+                    successList.add("商品ID " + productId);
+                    log.info("商品ID {} 库存更新成功", productId);
+                } catch (BusinessException e) {
+                    log.warn("商品ID {} 更新失败: {}", productIdArray[i], e.getMessage());
+                    failList.add("商品ID " + productIdArray[i] + ": " + e.getMessage());
+                } catch (Exception e) {
+                    log.error("商品ID {} 更新时发生异常", productIdArray[i], e);
+                    failList.add("商品ID " + productIdArray[i] + ": 系统异常");
+                }
             }
             
-            return Result.success();
+            String resultMessage = "批量更新完成。";
+            if (!successList.isEmpty()) {
+                resultMessage += " 成功: " + String.join(", ", successList) + ".";
+            }
+            if (!failList.isEmpty()) {
+                resultMessage += " 失败: " + String.join(", ", failList) + ".";
+            }
+            
+            log.info("批量更新库存结果: {}", resultMessage);
+            return Result.success(resultMessage);
         } catch (NumberFormatException e) {
+            log.error("参数格式错误: {}", e.getMessage());
             return Result.fail(400, "参数格式错误，请检查商品ID和库存变化量格式");
         } catch (Exception e) {
             log.error("批量更新库存失败", e);

@@ -216,6 +216,9 @@ public class InventoryServiceImpl implements InventoryService {
         if (queryDTO.getIsLowStock() != null && queryDTO.getIsLowStock()) {
             // 查询低库存商品
             inventoryList = inventoryMapper.selectLowStockProducts();
+        } else if (queryDTO.getIsLowStock() != null && !queryDTO.getIsLowStock()) {
+            // 查询非低库存商品（库存充足的商品）
+            inventoryList = inventoryMapper.selectNonLowStockProducts();
         } else if (queryDTO.getMinStock() != null || queryDTO.getMaxStock() != null) {
             // 按库存范围查询
             inventoryList = inventoryMapper.selectByStockRange(queryDTO.getMinStock(), queryDTO.getMaxStock());
@@ -224,8 +227,8 @@ public class InventoryServiceImpl implements InventoryService {
             Inventory inventory = inventoryMapper.selectByProductId(queryDTO.getProductId());
             inventoryList = inventory != null ? List.of(inventory) : List.of();
         } else {
-            // 查询所有库存（这里可能需要添加一个查询所有的方法）
-            inventoryList = inventoryMapper.selectLowStockProducts(); // 临时使用低库存查询
+            // 查询所有库存
+            inventoryList = inventoryMapper.selectAll();
         }
         
         // 转换为VO对象

@@ -53,6 +53,12 @@ public interface InventoryMapper {
     List<Inventory> selectLowStockProducts();
     
     /**
+     * 查询非低库存商品列表（库存充足的商品）
+     * @return 非低库存商品列表
+     */
+    List<Inventory> selectNonLowStockProducts();
+    
+    /**
      * 根据商品ID删除库存记录
      * @param productId 商品ID
      * @return 影响行数
@@ -86,4 +92,10 @@ public interface InventoryMapper {
      * @return 是否存在
      */
     boolean existsByProductId(Long productId);
+    
+    /**
+     * 查询所有库存记录
+     * @return 所有库存信息列表
+     */
+    List<Inventory> selectAll();
 }
