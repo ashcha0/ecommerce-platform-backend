@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import java.util.List;
 import com.ecommerce.common.exception.BusinessException;
 import com.ecommerce.common.constant.ErrorCode;
 
@@ -66,6 +67,24 @@ public class ProductController {
             // 其他异常，记录日志并返回通用错误信息
             log.error("获取商品列表时发生异常", e);
             return PageResult.error(500, "获取商品列表失败，请稍后重试");
+        }
+    }
+
+    @GetMapping("/simple")
+    @Operation(summary = "获取简化商品列表", description = "获取用于订单创建的简化商品列表，只包含基本信息")
+    public Result<List<Product>> getSimpleProducts() {
+        try {
+            // 创建查询DTO，获取所有启用状态的商品
+            ProductQueryDTO queryDTO = new ProductQueryDTO();
+            queryDTO.setPageNum(1);
+            queryDTO.setPageSize(1000); // 获取足够多的商品用于选择
+            queryDTO.setStatus(1); // 只获取启用状态的商品
+            
+            PageResult<Product> pageResult = productService.searchProducts(queryDTO);
+            return Result.success(pageResult.getData().getList());
+        } catch (Exception e) {
+            log.error("获取简化商品列表失败", e);
+            return Result.fail(500, "获取商品列表失败");
         }
     }
 

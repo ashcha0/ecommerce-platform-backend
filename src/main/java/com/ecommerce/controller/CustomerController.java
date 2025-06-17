@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import java.util.List;
 
 @RestController
 @RequestMapping("/customers")
@@ -133,6 +134,23 @@ public class CustomerController {
         } catch (Exception e) {
             log.error("删除客户时发生异常，客户ID: {}", id, e);
             return Result.fail(500, "删除客户失败，请稍后重试");
+        }
+    }
+    
+    @Operation(summary = "获取简化客户列表", description = "获取所有启用状态的客户简化信息，用于下拉选择等场景")
+    @GetMapping("/simple")
+    public Result<List<CustomerVO>> getSimpleCustomers() {
+        try {
+            // 创建查询DTO，获取所有启用状态的客户
+            CustomerQueryDTO queryDTO = new CustomerQueryDTO();
+            queryDTO.setPage(1);
+            queryDTO.setSize(1000); // 设置较大的页面大小以获取所有客户
+            
+            PageResult<CustomerVO> pageResult = customerService.searchCustomers(queryDTO);
+            return Result.success(pageResult.getData().getList());
+        } catch (Exception e) {
+            log.error("获取简化客户列表时发生异常", e);
+            return Result.fail(500, "获取客户列表失败，请稍后重试");
         }
     }
     
