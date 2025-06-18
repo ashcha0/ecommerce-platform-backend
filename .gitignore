@@ -43,3 +43,5 @@ build/
 *.swp
 *.swo
 logs
+
+.trae
