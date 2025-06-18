@@ -42,4 +42,11 @@ public interface OrderMapper {
      * @return 订单详情视图
      */
     OrderDetailsView selectOrderDetails(Long orderId);
+
+    /**
+     * 查询所有订单
+     * 
+     * @return 所有订单列表
+     */
+    List<Order> selectAll();
 }

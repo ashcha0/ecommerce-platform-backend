@@ -7,6 +7,9 @@ import com.ecommerce.model.dto.OrderQueryDTO;
 import com.ecommerce.model.entity.Order;
 import com.ecommerce.model.view.OrderDetailsView;
 import com.ecommerce.model.vo.OrderDetailVO;
+import com.ecommerce.model.vo.SimpleOrderVO;
+
+import java.util.List;
 import com.ecommerce.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -121,5 +124,12 @@ public class OrderController {
     public Result<Map<String, Object>> getOrderAmountStats() {
         // TODO: 实现订单金额统计逻辑
         return Result.success(Map.of("message", "功能开发中"));
+    }
+
+    @GetMapping("/simple")
+    @Operation(summary = "获取简单订单列表", description = "获取用于下拉选择的简单订单信息")
+    public Result<List<SimpleOrderVO>> getSimpleOrders() {
+        List<SimpleOrderVO> orders = orderService.getSimpleOrders();
+        return Result.success(orders);
     }
 }

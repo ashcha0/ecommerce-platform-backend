@@ -1,6 +1,7 @@
 package com.ecommerce.service;
 
 import com.ecommerce.common.result.PageResult;
+import com.ecommerce.model.dto.DeliveryCreateDTO;
 import com.ecommerce.model.dto.DeliveryQueryDTO;
 import com.ecommerce.model.dto.DeliveryUpdateDTO;
 import com.ecommerce.model.entity.Delivery;
@@ -38,6 +39,13 @@ public interface DeliveryService {
      * @return 配送信息
      */
     Delivery createDelivery(Long orderId);
+
+    /**
+     * 创建配送信息（包含详细信息）
+     * @param createDTO 配送创建信息
+     * @return 配送信息
+     */
+    Delivery createDeliveryWithDetails(DeliveryCreateDTO createDTO);
 
     /**
      * 更新配送信息

@@ -9,6 +9,10 @@ public class Delivery {
     private Long orderId; // 订单ID
     private String trackingNo; // 物流单号
     private String shipper; // 物流公司
+    private String consigneeName; // 收货人姓名
+    private String consigneePhone; // 收货人电话
+    private String deliveryAddress; // 配送地址
+    private String remark; // 备注
     private DeliveryStatus status; // 配送状态
     private LocalDateTime shipTime; // 发货时间
     private LocalDateTime estimateTime; // 预计到达时间

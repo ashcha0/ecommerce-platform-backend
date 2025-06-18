@@ -14,6 +14,11 @@ public class Order {
     private OrderStatus status; // 订单状态
     private LocalDateTime createTime; // 创建时间
     private LocalDateTime updateTime; // 更新时间
+    
+    // 关联查询字段（非数据库字段）
+    private String customerName; // 客户姓名
+    private String customerPhone; // 客户电话
+    private String deliveryAddress; // 配送地址
 
     // 订单状态枚举
     public enum OrderStatus {

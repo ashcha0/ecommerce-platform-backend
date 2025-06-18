@@ -2,6 +2,7 @@ package com.ecommerce.service.impl;
 
 import com.ecommerce.common.result.PageResult;
 import com.ecommerce.mapper.DeliveryMapper;
+import com.ecommerce.model.dto.DeliveryCreateDTO;
 import com.ecommerce.model.dto.DeliveryQueryDTO;
 import com.ecommerce.model.dto.DeliveryUpdateDTO;
 import com.ecommerce.model.entity.Delivery;
@@ -97,6 +98,36 @@ public class DeliveryServiceImpl implements DeliveryService {
         
         deliveryMapper.insert(delivery);
         log.info("配送信息创建成功，配送ID: {}", delivery.getId());
+        
+        return delivery;
+    }
+
+    @Override
+    @Transactional
+    public Delivery createDeliveryWithDetails(DeliveryCreateDTO createDTO) {
+        log.info("创建配送信息（包含详细信息），请求数据: {}", createDTO);
+        
+        // 检查是否已存在配送信息
+        Delivery existingDelivery = deliveryMapper.selectByOrderId(createDTO.getOrderId());
+        if (existingDelivery != null) {
+            log.warn("订单已存在配送信息，订单ID: {}", createDTO.getOrderId());
+            throw new RuntimeException("该订单已存在配送信息");
+        }
+        
+        Delivery delivery = new Delivery();
+        delivery.setOrderId(createDTO.getOrderId());
+        delivery.setTrackingNo(createDTO.getTrackingNo());
+        delivery.setShipper(createDTO.getShipper());
+        delivery.setConsigneeName(createDTO.getConsigneeName());
+        delivery.setConsigneePhone(createDTO.getConsigneePhone());
+        delivery.setDeliveryAddress(createDTO.getDeliveryAddress());
+        delivery.setEstimateTime(createDTO.getEstimateTime());
+        delivery.setRemark(createDTO.getRemark());
+        delivery.setStatus(Delivery.DeliveryStatus.PENDING);
+        delivery.setCreateTime(LocalDateTime.now());
+        
+        deliveryMapper.insert(delivery);
+        log.info("配送信息创建成功，配送ID: {}, 订单ID: {}", delivery.getId(), createDTO.getOrderId());
         
         return delivery;
     }

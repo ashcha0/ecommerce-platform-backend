@@ -15,6 +15,7 @@ import com.ecommerce.model.entity.OrderItem;
 import com.ecommerce.model.entity.Product;
 import com.ecommerce.model.view.OrderDetailsView;
 import com.ecommerce.model.vo.OrderDetailVO;
+import com.ecommerce.model.vo.SimpleOrderVO;
 import com.ecommerce.service.InventoryService;
 import com.ecommerce.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -275,5 +276,29 @@ public class OrderServiceImpl implements OrderService {
             case CANCELLED:
                 throw new BusinessException(ErrorCode.PARAM_ERROR, "订单已完成或已取消，无法修改状态");
         }
+    }
+
+    @Override
+    public List<SimpleOrderVO> getSimpleOrders() {
+        log.info("获取简单订单列表");
+        
+        // 查询所有订单
+        List<Order> orders = orderMapper.selectAll();
+        
+        // 转换为SimpleOrderVO
+        List<SimpleOrderVO> simpleOrders = new ArrayList<>();
+        for (Order order : orders) {
+            SimpleOrderVO vo = new SimpleOrderVO();
+            vo.setId(order.getId());
+            vo.setCustomerName(order.getCustomerName());
+            vo.setCustomerPhone(order.getCustomerPhone());
+            vo.setDeliveryAddress(order.getDeliveryAddress());
+            vo.setTotalAmount(order.getTotalAmount());
+            vo.setStatus(order.getStatus().getDesc());
+            vo.setCreateTime(order.getCreateTime());
+            simpleOrders.add(vo);
+        }
+        
+        return simpleOrders;
     }
 }

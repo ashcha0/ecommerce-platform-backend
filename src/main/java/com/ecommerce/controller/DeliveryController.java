@@ -2,6 +2,7 @@ package com.ecommerce.controller;
 
 import com.ecommerce.common.result.PageResult;
 import com.ecommerce.common.result.Result;
+import com.ecommerce.model.dto.DeliveryCreateDTO;
 import com.ecommerce.model.dto.DeliveryQueryDTO;
 import com.ecommerce.model.dto.DeliveryUpdateDTO;
 import com.ecommerce.model.entity.Delivery;
@@ -82,15 +83,34 @@ public class DeliveryController {
     }
 
     @Operation(summary = "创建配送信息")
-    @PostMapping("/order/{orderId}")
+    @PostMapping
     public Result<DeliveryVO> createDelivery(
+            @Parameter(description = "配送创建信息", required = true)
+            @Valid @RequestBody DeliveryCreateDTO createDTO) {
+        
+        log.info("创建配送信息，请求数据: {}", createDTO);
+        
+        try {
+            Delivery delivery = deliveryService.createDeliveryWithDetails(createDTO);
+            DeliveryVO deliveryVO = DeliveryVO.from(delivery);
+            log.info("配送信息创建成功，配送ID: {}", delivery.getId());
+            return Result.success(deliveryVO, "配送信息创建成功");
+        } catch (Exception e) {
+            log.error("创建配送信息失败，请求数据: {}", createDTO, e);
+            return Result.fail(500, "创建配送信息失败: " + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "根据订单ID创建配送信息")
+    @PostMapping("/order/{orderId}")
+    public Result<DeliveryVO> createDeliveryByOrderId(
             @Parameter(description = "订单ID", required = true)
             @PathVariable("orderId") 
             @NotNull(message = "订单ID不能为空") 
             @Positive(message = "订单ID必须为正数") 
             Long orderId) {
         
-        log.info("创建配送信息，订单ID: {}", orderId);
+        log.info("根据订单ID创建配送信息，订单ID: {}", orderId);
         
         try {
             Delivery delivery = deliveryService.createDelivery(orderId);
