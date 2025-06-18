@@ -158,11 +158,6 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException(ErrorCode.ORDER_NOT_FOUND, "订单不存在");
         }
 
-        // 检查订单状态
-        if (order.getStatus() == Order.OrderStatus.PAID) {
-            throw new BusinessException(ErrorCode.ORDER_ALREADY_PAID, "已支付订单无法取消");
-        }
-
         if (order.getStatus() == Order.OrderStatus.CANCELLED) {
             throw new BusinessException(ErrorCode.ORDER_ALREADY_CANCELLED, "订单已取消");
         }
