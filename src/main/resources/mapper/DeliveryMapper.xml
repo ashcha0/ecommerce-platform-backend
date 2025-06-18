@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecommerce.mapper.DeliveryMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="DeliveryResultMap" type="com.ecommerce.model.entity.Delivery">
+        <id column="id" property="id"/>
+        <result column="order_id" property="orderId"/>
+        <result column="tracking_no" property="trackingNo"/>
+        <result column="shipper" property="shipper"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result column="ship_time" property="shipTime"/>
+        <result column="estimate_time" property="estimateTime"/>
+        <result column="delivery_time" property="deliveryTime"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <!-- 通用查询条件 -->
+    <sql id="whereCondition">
+        <where>
+            <if test="orderId != null">
+                AND order_id = #{orderId}
+            </if>
+            <if test="trackingNo != null and trackingNo != ''">
+                AND tracking_no LIKE CONCAT('%', #{trackingNo}, '%')
+            </if>
+            <if test="shipper != null and shipper != ''">
+                AND shipper LIKE CONCAT('%', #{shipper}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="shipTimeStart != null">
+                AND ship_time >= #{shipTimeStart}
+            </if>
+            <if test="shipTimeEnd != null">
+                AND ship_time &lt;= #{shipTimeEnd}
+            </if>
+            <if test="createTimeStart != null">
+                AND create_time >= #{createTimeStart}
+            </if>
+            <if test="createTimeEnd != null">
+                AND create_time &lt;= #{createTimeEnd}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 分页查询配送列表 -->
+    <select id="selectDeliveryList" resultMap="DeliveryResultMap">
+        SELECT 
+            id, order_id, tracking_no, shipper, status, 
+            ship_time, estimate_time, delivery_time, create_time
+        FROM delivery
+        <include refid="whereCondition"/>
+        ORDER BY create_time DESC
+        <if test="pageNum != null and pageSize != null">
+            LIMIT #{pageSize} OFFSET #{offset}
+        </if>
+    </select>
+
+    <!-- 查询配送总数 -->
+    <select id="countDeliveryList" resultType="long">
+        SELECT COUNT(*)
+        FROM delivery
+        <include refid="whereCondition"/>
+    </select>
+
+</mapper>
