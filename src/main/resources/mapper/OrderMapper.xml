@@ -9,9 +9,12 @@
         <result column="customer_id" property="customerId" jdbcType="BIGINT"/>
         <result column="order_time" property="orderTime" jdbcType="TIMESTAMP"/>
         <result column="total_amount" property="totalAmount" jdbcType="DECIMAL"/>
-        <result column="status" property="status" jdbcType="VARCHAR" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="customer_name" property="customerName" jdbcType="VARCHAR"/>
+        <result column="customer_phone" property="customerPhone" jdbcType="VARCHAR"/>
+        <result column="delivery_address" property="deliveryAddress" jdbcType="VARCHAR"/>
     </resultMap>
 
     <!-- 订单详情视图结果映射 -->
@@ -148,6 +151,25 @@
         FROM `order` o
         LEFT JOIN customer c ON o.customer_id = c.id
         WHERE o.id = #{orderId}
+    </select>
+
+    <!-- 查询所有订单 -->
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT 
+            o.id,
+            o.order_no,
+            o.customer_id,
+            c.real_name as customer_name,
+            c.phone as customer_phone,
+            c.address as delivery_address,
+            o.order_time,
+            o.total_amount,
+            o.status,
+            o.create_time,
+            o.update_time
+        FROM `order` o
+        LEFT JOIN customer c ON o.customer_id = c.id
+        ORDER BY o.create_time DESC
     </select>
 
 </mapper>

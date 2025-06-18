@@ -6,6 +6,9 @@ import com.ecommerce.model.dto.OrderQueryDTO;
 import com.ecommerce.model.entity.Order;
 import com.ecommerce.model.view.OrderDetailsView;
 import com.ecommerce.model.vo.OrderDetailVO;
+import com.ecommerce.model.vo.SimpleOrderVO;
+
+import java.util.List;
 
 public interface OrderService {
     /**
@@ -37,4 +40,9 @@ public interface OrderService {
      * 获取订单的配送信息
      */
     OrderDetailVO.DeliveryVO getOrderDeliveryInfo(Long orderId);
+
+    /**
+     * 获取简单订单列表
+     */
+    List<SimpleOrderVO> getSimpleOrders();
 }
