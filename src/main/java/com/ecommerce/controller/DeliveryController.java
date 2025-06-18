@@ -25,7 +25,7 @@ import jakarta.validation.constraints.Positive;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/delivery")
+@RequestMapping("/delivery")
 @Tag(name = "配送管理", description = "配送相关的API接口")
 public class DeliveryController {
 
