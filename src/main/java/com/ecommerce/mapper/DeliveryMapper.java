@@ -34,8 +34,8 @@ public interface DeliveryMapper {
     /**
      * 插入配送信息
      */
-    @Insert("INSERT INTO delivery (order_id, tracking_no, shipper, status, ship_time, estimate_time, delivery_time, create_time) " +
-            "VALUES (#{orderId}, #{trackingNo}, #{shipper}, #{status}, #{shipTime}, #{estimateTime}, #{deliveryTime}, #{createTime})")
+    @Insert("INSERT INTO delivery (order_id, tracking_no, shipper, status, ship_time, estimate_time, delivery_time, create_time, consignee_name, consignee_phone, delivery_address) " +
+            "VALUES (#{orderId}, #{trackingNo}, #{shipper}, #{status}, #{shipTime}, #{estimateTime}, #{deliveryTime}, #{createTime}, #{consigneeName}, #{consigneePhone}, #{deliveryAddress})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(Delivery delivery);
 
@@ -43,7 +43,8 @@ public interface DeliveryMapper {
      * 更新配送信息
      */
     @Update("UPDATE delivery SET tracking_no = #{trackingNo}, shipper = #{shipper}, status = #{status}, " +
-            "ship_time = #{shipTime}, estimate_time = #{estimateTime}, delivery_time = #{deliveryTime} " +
+            "ship_time = #{shipTime}, estimate_time = #{estimateTime}, delivery_time = #{deliveryTime}, " +
+            "consignee_name = #{consigneeName}, consignee_phone = #{consigneePhone}, delivery_address = #{deliveryAddress} " +
             "WHERE id = #{id}")
     int updateById(Delivery delivery);
 

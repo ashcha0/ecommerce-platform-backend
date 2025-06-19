@@ -3,6 +3,7 @@ package com.ecommerce.model.dto;
 import lombok.Data;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Data
 public class DeliveryUpdateDTO {
@@ -13,9 +14,14 @@ public class DeliveryUpdateDTO {
     private String shipper;
 
     private DeliveryStatus status;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime shipTime;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime estimateTime;
 
     public enum DeliveryStatus {
-        SHIPPED, IN_TRANSIT, DELIVERED
+        PAYING, SHIPPING, RECEIPTING, COMPLETED, CANCELLED, PROCESSING, PROCESSED
     }
 }
