@@ -8,6 +8,7 @@ import com.github.pagehelper.PageInfo;
 import com.ecommerce.mapper.OrderItemMapper;
 import com.ecommerce.mapper.OrderMapper;
 import com.ecommerce.mapper.ProductMapper;
+import com.ecommerce.model.dto.DeliveryCreateDTO;
 import com.ecommerce.model.dto.OrderCreateDTO;
 import com.ecommerce.model.dto.OrderQueryDTO;
 import com.ecommerce.model.entity.Order;
@@ -16,6 +17,7 @@ import com.ecommerce.model.entity.Product;
 import com.ecommerce.model.view.OrderDetailsView;
 import com.ecommerce.model.vo.OrderDetailVO;
 import com.ecommerce.model.vo.SimpleOrderVO;
+import com.ecommerce.service.DeliveryService;
 import com.ecommerce.service.InventoryService;
 import com.ecommerce.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +39,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderItemMapper orderItemMapper;
     private final ProductMapper productMapper;
     private final InventoryService inventoryService;
+    private final DeliveryService deliveryService;
     private final IdGenerator idGenerator;
 
     @Override
@@ -99,6 +102,25 @@ public class OrderServiceImpl implements OrderService {
                 log.error("库存锁定失败，商品ID: {}, 数量: {}", orderItem.getProductId(), orderItem.getQuantity(), e);
                 throw new BusinessException(ErrorCode.INVENTORY_LOCK_FAILED, "库存锁定失败");
             }
+        }
+
+        // 7. 创建配送记录
+        try {
+            DeliveryCreateDTO deliveryCreateDTO = new DeliveryCreateDTO();
+            deliveryCreateDTO.setOrderId(order.getId());
+            deliveryCreateDTO.setConsigneeName(dto.getConsigneeName());
+            deliveryCreateDTO.setConsigneePhone(dto.getConsigneePhone());
+            deliveryCreateDTO.setDeliveryAddress(dto.getDeliveryAddress());
+            deliveryCreateDTO.setRemark(dto.getRemark());
+            
+            log.info("准备创建配送记录，订单ID: {}, 收货人: {}, 电话: {}, 地址: {}", 
+                    order.getId(), dto.getConsigneeName(), dto.getConsigneePhone(), dto.getDeliveryAddress());
+            
+            deliveryService.createDeliveryWithDetails(deliveryCreateDTO);
+            log.info("配送记录创建成功，订单ID: {}", order.getId());
+        } catch (Exception e) {
+            log.error("配送记录创建失败，订单ID: {}, 错误信息: {}", order.getId(), e.getMessage(), e);
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "配送记录创建失败: " + e.getMessage());
         }
 
         log.info("订单创建成功，订单号: {}, 订单ID: {}", orderNo, order.getId());
