@@ -187,17 +187,14 @@ public class DeliveryServiceImpl implements DeliveryService {
             
             log.info("查询到配送信息 - ID: {}, 当前状态: {}", delivery.getId(), delivery.getStatus());
             
-            // 检查当前状态是否允许发货
-            if (delivery.getStatus() != Delivery.DeliveryStatus.PAYING) {
-                log.warn("配送状态不允许发货，当前状态: {}, 订单ID: {}", delivery.getStatus(), orderId);
-                return false;
-            }
+            // 管理系统强制发货，跳过状态验证
+            log.info("管理系统发货操作，跳过状态验证，当前状态: {}", delivery.getStatus());
             
             log.info("开始更新发货信息");
             // 更新发货信息
             delivery.setTrackingNo(trackingNo);
             delivery.setShipper(shipper);
-            delivery.setStatus(Delivery.DeliveryStatus.SHIPPING);
+            delivery.setStatus(Delivery.DeliveryStatus.RECEIPTING);
             delivery.setShipTime(LocalDateTime.now());
             
             log.info("准备更新数据库，配送ID: {}", delivery.getId());

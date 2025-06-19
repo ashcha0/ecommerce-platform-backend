@@ -157,18 +157,14 @@ public class DeliveryController {
         
         log.info("更新配送状态，订单ID: {}, 状态: {}", orderId, status);
         
-        try {
-            // 验证状态值是否有效
-            Delivery.DeliveryStatus.valueOf(status);
-            
-            boolean success = deliveryService.updateDeliveryStatus(orderId, status);
-            if (success) {
-                return Result.success(null, "配送状态更新成功");
-            }
-            return Result.fail(400, "配送状态更新失败");
-        } catch (IllegalArgumentException e) {
-            return Result.fail(400, "无效的配送状态: " + status);
+        // 管理系统拥有最高权限，可以无视状态规则直接修改任何状态
+        log.info("管理系统强制更新配送状态，跳过状态验证");
+        
+        boolean success = deliveryService.updateDeliveryStatus(orderId, status);
+        if (success) {
+            return Result.success(null, "配送状态更新成功");
         }
+        return Result.fail(400, "配送状态更新失败");
     }
 
     @Operation(summary = "发货")
