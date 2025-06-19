@@ -21,10 +21,13 @@ public class Delivery {
 
     // 配送状态枚举
     public enum DeliveryStatus {
-        PENDING("待发货"),
-        SHIPPED("已发货"),
-        IN_TRANSIT("运输中"),
-        DELIVERED("已签收");
+        PAYING("待付款"),
+        SHIPPING("待发货"),
+        RECEIPTING("待收货"),
+        COMPLETED("已完成"),
+        CANCELLED("已取消"),
+        PROCESSING("售后处理中"),
+        PROCESSED("售后处理完成");
 
         private final String desc;
 

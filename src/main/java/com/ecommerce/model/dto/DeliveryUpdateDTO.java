@@ -16,6 +16,6 @@ public class DeliveryUpdateDTO {
     private LocalDateTime shipTime;
 
     public enum DeliveryStatus {
-        SHIPPED, IN_TRANSIT, DELIVERED
+        PAYING, SHIPPING, RECEIPTING, COMPLETED, CANCELLED, PROCESSING, PROCESSED
     }
 }

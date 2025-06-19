@@ -78,4 +78,32 @@ public interface DeliveryService {
      * @return 是否成功
      */
     boolean confirmDelivery(Long orderId);
+
+    /**
+     * 确认付款
+     * @param orderId 订单ID
+     * @return 是否成功
+     */
+    boolean confirmPayment(Long orderId);
+
+    /**
+     * 取消订单
+     * @param orderId 订单ID
+     * @return 是否成功
+     */
+    boolean cancelOrder(Long orderId);
+
+    /**
+     * 申请售后
+     * @param orderId 订单ID
+     * @return 是否成功
+     */
+    boolean applyAfterSale(Long orderId);
+
+    /**
+     * 完成售后
+     * @param orderId 订单ID
+     * @return 是否成功
+     */
+    boolean completeAfterSale(Long orderId);
 }

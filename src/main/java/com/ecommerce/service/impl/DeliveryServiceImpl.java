@@ -93,7 +93,7 @@ public class DeliveryServiceImpl implements DeliveryService {
         
         Delivery delivery = new Delivery();
         delivery.setOrderId(orderId);
-        delivery.setStatus(Delivery.DeliveryStatus.PENDING);
+        delivery.setStatus(Delivery.DeliveryStatus.PAYING);
         delivery.setCreateTime(LocalDateTime.now());
         
         deliveryMapper.insert(delivery);
@@ -123,7 +123,7 @@ public class DeliveryServiceImpl implements DeliveryService {
         delivery.setDeliveryAddress(createDTO.getDeliveryAddress());
         delivery.setEstimateTime(createDTO.getEstimateTime());
         delivery.setRemark(createDTO.getRemark());
-        delivery.setStatus(Delivery.DeliveryStatus.PENDING);
+        delivery.setStatus(Delivery.DeliveryStatus.PAYING);
         delivery.setCreateTime(LocalDateTime.now());
         
         deliveryMapper.insert(delivery);
@@ -173,24 +173,50 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Override
     @Transactional
     public boolean shipOrder(Long orderId, String trackingNo, String shipper) {
-        log.info("发货处理，订单ID: {}, 物流单号: {}, 物流公司: {}", orderId, trackingNo, shipper);
+        log.info("=== 发货服务开始处理 ===");
+        log.info("发货处理参数 - 订单ID: {}, 物流单号: {}, 物流公司: {}", orderId, trackingNo, shipper);
         
-        Delivery delivery = deliveryMapper.selectByOrderId(orderId);
-        if (delivery == null) {
-            log.warn("配送信息不存在，订单ID: {}", orderId);
-            return false;
+        try {
+            log.info("开始查询配送信息，订单ID: {}", orderId);
+            Delivery delivery = deliveryMapper.selectByOrderId(orderId);
+            
+            if (delivery == null) {
+                log.warn("配送信息不存在，订单ID: {}", orderId);
+                return false;
+            }
+            
+            log.info("查询到配送信息 - ID: {}, 当前状态: {}", delivery.getId(), delivery.getStatus());
+            
+            // 检查当前状态是否允许发货
+            if (delivery.getStatus() != Delivery.DeliveryStatus.PAYING) {
+                log.warn("配送状态不允许发货，当前状态: {}, 订单ID: {}", delivery.getStatus(), orderId);
+                return false;
+            }
+            
+            log.info("开始更新发货信息");
+            // 更新发货信息
+            delivery.setTrackingNo(trackingNo);
+            delivery.setShipper(shipper);
+            delivery.setStatus(Delivery.DeliveryStatus.SHIPPING);
+            delivery.setShipTime(LocalDateTime.now());
+            
+            log.info("准备更新数据库，配送ID: {}", delivery.getId());
+            int result = deliveryMapper.updateById(delivery);
+            log.info("数据库更新结果: {}, 影响行数: {}", result > 0 ? "成功" : "失败", result);
+            
+            if (result > 0) {
+                log.info("发货处理成功完成");
+            } else {
+                log.error("发货处理失败，数据库更新失败");
+            }
+            
+            return result > 0;
+        } catch (Exception e) {
+            log.error("发货处理异常: {}", e.getMessage(), e);
+            throw e;
+        } finally {
+            log.info("=== 发货服务处理结束 ===");
         }
-        
-        // 更新发货信息
-        delivery.setTrackingNo(trackingNo);
-        delivery.setShipper(shipper);
-        delivery.setStatus(Delivery.DeliveryStatus.SHIPPED);
-        delivery.setShipTime(LocalDateTime.now());
-        
-        int result = deliveryMapper.updateById(delivery);
-        log.info("发货处理结果: {}", result > 0 ? "成功" : "失败");
-        
-        return result > 0;
     }
 
     @Override
@@ -204,12 +230,88 @@ public class DeliveryServiceImpl implements DeliveryService {
             return false;
         }
         
-        // 更新为已签收状态
-        delivery.setStatus(Delivery.DeliveryStatus.DELIVERED);
+        // 更新为已完成状态
+        delivery.setStatus(Delivery.DeliveryStatus.COMPLETED);
         delivery.setDeliveryTime(LocalDateTime.now());
         
         int result = deliveryMapper.updateById(delivery);
         log.info("确认收货结果: {}", result > 0 ? "成功" : "失败");
+        
+        return result > 0;
+    }
+
+    @Override
+    public boolean confirmPayment(Long orderId) {
+        log.info("确认付款，订单ID: {}", orderId);
+        
+        Delivery delivery = deliveryMapper.selectByOrderId(orderId);
+        if (delivery == null) {
+            log.warn("配送信息不存在，订单ID: {}", orderId);
+            return false;
+        }
+        
+        // 更新为待发货状态
+        delivery.setStatus(Delivery.DeliveryStatus.SHIPPING);
+        
+        int result = deliveryMapper.updateById(delivery);
+        log.info("确认付款结果: {}", result > 0 ? "成功" : "失败");
+        
+        return result > 0;
+    }
+
+    @Override
+    public boolean cancelOrder(Long orderId) {
+        log.info("取消订单，订单ID: {}", orderId);
+        
+        Delivery delivery = deliveryMapper.selectByOrderId(orderId);
+        if (delivery == null) {
+            log.warn("配送信息不存在，订单ID: {}", orderId);
+            return false;
+        }
+        
+        // 更新为已取消状态
+        delivery.setStatus(Delivery.DeliveryStatus.CANCELLED);
+        
+        int result = deliveryMapper.updateById(delivery);
+        log.info("取消订单结果: {}", result > 0 ? "成功" : "失败");
+        
+        return result > 0;
+    }
+
+    @Override
+    public boolean applyAfterSale(Long orderId) {
+        log.info("申请售后，订单ID: {}", orderId);
+        
+        Delivery delivery = deliveryMapper.selectByOrderId(orderId);
+        if (delivery == null) {
+            log.warn("配送信息不存在，订单ID: {}", orderId);
+            return false;
+        }
+        
+        // 更新为售后处理中状态
+        delivery.setStatus(Delivery.DeliveryStatus.PROCESSING);
+        
+        int result = deliveryMapper.updateById(delivery);
+        log.info("申请售后结果: {}", result > 0 ? "成功" : "失败");
+        
+        return result > 0;
+    }
+
+    @Override
+    public boolean completeAfterSale(Long orderId) {
+        log.info("完成售后，订单ID: {}", orderId);
+        
+        Delivery delivery = deliveryMapper.selectByOrderId(orderId);
+        if (delivery == null) {
+            log.warn("配送信息不存在，订单ID: {}", orderId);
+            return false;
+        }
+        
+        // 更新为售后处理完成状态
+        delivery.setStatus(Delivery.DeliveryStatus.PROCESSED);
+        
+        int result = deliveryMapper.updateById(delivery);
+        log.info("完成售后结果: {}", result > 0 ? "成功" : "失败");
         
         return result > 0;
     }

@@ -188,13 +188,27 @@ public class DeliveryController {
             @NotBlank(message = "物流公司不能为空") 
             String shipper) {
         
-        log.info("发货处理，订单ID: {}, 物流单号: {}, 物流公司: {}", orderId, trackingNo, shipper);
+        log.info("=== 发货接口开始处理 ===");
+        log.info("接收到发货请求 - 订单ID: {}, 物流单号: {}, 物流公司: {}", orderId, trackingNo, shipper);
         
-        boolean success = deliveryService.shipOrder(orderId, trackingNo, shipper);
-        if (success) {
-            return Result.success(null, "发货成功");
+        try {
+            log.info("开始调用发货服务");
+            boolean success = deliveryService.shipOrder(orderId, trackingNo, shipper);
+            log.info("发货服务调用结果: {}", success ? "成功" : "失败");
+            
+            if (success) {
+                log.info("发货处理成功，返回成功响应");
+                return Result.success(null, "发货成功");
+            } else {
+                log.error("发货处理失败，返回失败响应");
+                return Result.fail(400, "发货失败");
+            }
+        } catch (Exception e) {
+            log.error("发货处理异常: {}", e.getMessage(), e);
+            return Result.fail(500, "发货处理异常: " + e.getMessage());
+        } finally {
+            log.info("=== 发货接口处理结束 ===");
         }
-        return Result.fail(400, "发货失败");
     }
 
     @Operation(summary = "确认收货")
@@ -213,5 +227,77 @@ public class DeliveryController {
             return Result.success(null, "确认收货成功");
         }
         return Result.fail(400, "确认收货失败");
+    }
+
+    @Operation(summary = "确认付款")
+    @PostMapping("/order/{orderId}/confirm-payment")
+    public Result<Void> confirmPayment(
+            @Parameter(description = "订单ID", required = true)
+            @PathVariable("orderId") 
+            @NotNull(message = "订单ID不能为空") 
+            @Positive(message = "订单ID必须为正数") 
+            Long orderId) {
+        
+        log.info("确认付款，订单ID: {}", orderId);
+        
+        boolean success = deliveryService.confirmPayment(orderId);
+        if (success) {
+            return Result.success(null, "确认付款成功");
+        }
+        return Result.fail(400, "确认付款失败");
+    }
+
+    @Operation(summary = "取消订单")
+    @PostMapping("/order/{orderId}/cancel")
+    public Result<Void> cancelOrder(
+            @Parameter(description = "订单ID", required = true)
+            @PathVariable("orderId") 
+            @NotNull(message = "订单ID不能为空") 
+            @Positive(message = "订单ID必须为正数") 
+            Long orderId) {
+        
+        log.info("取消订单，订单ID: {}", orderId);
+        
+        boolean success = deliveryService.cancelOrder(orderId);
+        if (success) {
+            return Result.success(null, "取消订单成功");
+        }
+        return Result.fail(400, "取消订单失败");
+    }
+
+    @Operation(summary = "申请售后")
+    @PostMapping("/order/{orderId}/apply-after-sale")
+    public Result<Void> applyAfterSale(
+            @Parameter(description = "订单ID", required = true)
+            @PathVariable("orderId") 
+            @NotNull(message = "订单ID不能为空") 
+            @Positive(message = "订单ID必须为正数") 
+            Long orderId) {
+        
+        log.info("申请售后，订单ID: {}", orderId);
+        
+        boolean success = deliveryService.applyAfterSale(orderId);
+        if (success) {
+            return Result.success(null, "申请售后成功");
+        }
+        return Result.fail(400, "申请售后失败");
+    }
+
+    @Operation(summary = "完成售后")
+    @PostMapping("/order/{orderId}/complete-after-sale")
+    public Result<Void> completeAfterSale(
+            @Parameter(description = "订单ID", required = true)
+            @PathVariable("orderId") 
+            @NotNull(message = "订单ID不能为空") 
+            @Positive(message = "订单ID必须为正数") 
+            Long orderId) {
+        
+        log.info("完成售后，订单ID: {}", orderId);
+        
+        boolean success = deliveryService.completeAfterSale(orderId);
+        if (success) {
+            return Result.success(null, "完成售后成功");
+        }
+        return Result.fail(400, "完成售后失败");
     }
 }
