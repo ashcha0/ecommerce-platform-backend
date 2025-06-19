@@ -70,7 +70,7 @@ public interface DeliveryService {
      * @param shipper 物流公司
      * @return 是否成功
      */
-    boolean shipOrder(Long orderId, String trackingNo, String shipper);
+    boolean shipOrder(Long orderId, String trackingNo, String shipper, String estimateTime);
 
     /**
      * 确认收货

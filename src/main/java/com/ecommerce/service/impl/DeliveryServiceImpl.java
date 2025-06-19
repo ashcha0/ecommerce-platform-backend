@@ -14,7 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -136,6 +138,9 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Transactional
     public boolean updateDelivery(Long orderId, DeliveryUpdateDTO updateDTO) {
         log.info("更新配送信息，订单ID: {}", orderId);
+        log.info("接收到的更新数据 - trackingNo: {}, shipper: {}, estimateTime: {}, status: {}, shipTime: {}", 
+                updateDTO.getTrackingNo(), updateDTO.getShipper(), updateDTO.getEstimateTime(), 
+                updateDTO.getStatus(), updateDTO.getShipTime());
         
         Delivery delivery = deliveryMapper.selectByOrderId(orderId);
         if (delivery == null) {
@@ -151,6 +156,12 @@ public class DeliveryServiceImpl implements DeliveryService {
         }
         if (updateDTO.getShipTime() != null) {
             delivery.setShipTime(updateDTO.getShipTime());
+        }
+        if (updateDTO.getEstimateTime() != null) {
+            log.info("更新预计送达时间: {} -> {}", delivery.getEstimateTime(), updateDTO.getEstimateTime());
+            delivery.setEstimateTime(updateDTO.getEstimateTime());
+        } else {
+            log.info("预计送达时间为空，不更新");
         }
         
         int result = deliveryMapper.updateById(delivery);
@@ -172,9 +183,9 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     @Override
     @Transactional
-    public boolean shipOrder(Long orderId, String trackingNo, String shipper) {
+    public boolean shipOrder(Long orderId, String trackingNo, String shipper, String estimateTime) {
         log.info("=== 发货服务开始处理 ===");
-        log.info("发货处理参数 - 订单ID: {}, 物流单号: {}, 物流公司: {}", orderId, trackingNo, shipper);
+        log.info("发货处理参数 - 订单ID: {}, 物流单号: {}, 物流公司: {}, 预计送达时间: {}", orderId, trackingNo, shipper, estimateTime);
         
         try {
             log.info("开始查询配送信息，订单ID: {}", orderId);
@@ -196,6 +207,37 @@ public class DeliveryServiceImpl implements DeliveryService {
             delivery.setShipper(shipper);
             delivery.setStatus(Delivery.DeliveryStatus.RECEIPTING);
             delivery.setShipTime(LocalDateTime.now());
+            
+            // 设置预计送达时间
+            if (estimateTime != null && !estimateTime.trim().isEmpty()) {
+                try {
+                    log.info("开始解析预计送达时间: {}", estimateTime);
+                    LocalDateTime estimateDateTime;
+                    
+                    // 尝试多种日期格式解析
+                    if (estimateTime.contains("T")) {
+                        // ISO格式: 2024-01-01T10:30:00
+                        estimateDateTime = LocalDateTime.parse(estimateTime);
+                    } else if (estimateTime.length() == 19) {
+                        // 标准格式: 2024-01-01 10:30:00
+                        estimateDateTime = LocalDateTime.parse(estimateTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                    } else if (estimateTime.length() == 10) {
+                        // 日期格式: 2024-01-01
+                        estimateDateTime = LocalDate.parse(estimateTime).atStartOfDay();
+                    } else {
+                        // 其他格式尝试
+                        estimateDateTime = LocalDateTime.parse(estimateTime.replace(" ", "T"));
+                    }
+                    
+                    delivery.setEstimateTime(estimateDateTime);
+                    log.info("成功设置预计送达时间: {}", estimateDateTime);
+                } catch (Exception e) {
+                    log.error("预计送达时间格式解析失败，原始值: {}, 错误: {}", estimateTime, e.getMessage());
+                    // 不设置预计送达时间，但不影响发货流程
+                }
+            } else {
+                log.info("预计送达时间为空，跳过设置");
+            }
             
             log.info("准备更新数据库，配送ID: {}", delivery.getId());
             int result = deliveryMapper.updateById(delivery);

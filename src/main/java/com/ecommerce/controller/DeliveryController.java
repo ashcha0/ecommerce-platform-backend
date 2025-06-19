@@ -134,6 +134,9 @@ public class DeliveryController {
             @Valid @RequestBody DeliveryUpdateDTO updateDTO) {
         
         log.info("更新配送信息，订单ID: {}, 更新内容: {}", orderId, updateDTO);
+        log.info("详细字段信息 - trackingNo: {}, shipper: {}, estimateTime: {}, status: {}, shipTime: {}", 
+                updateDTO.getTrackingNo(), updateDTO.getShipper(), updateDTO.getEstimateTime(), 
+                updateDTO.getStatus(), updateDTO.getShipTime());
         
         boolean success = deliveryService.updateDelivery(orderId, updateDTO);
         if (success) {
@@ -182,14 +185,17 @@ public class DeliveryController {
             @Parameter(description = "物流公司", required = true)
             @RequestParam("shipper") 
             @NotBlank(message = "物流公司不能为空") 
-            String shipper) {
+            String shipper,
+            @Parameter(description = "预计送达时间", required = false)
+            @RequestParam(value = "estimateTime", required = false) 
+            String estimateTime) {
         
         log.info("=== 发货接口开始处理 ===");
-        log.info("接收到发货请求 - 订单ID: {}, 物流单号: {}, 物流公司: {}", orderId, trackingNo, shipper);
+        log.info("接收到发货请求 - 订单ID: {}, 物流单号: {}, 物流公司: {}, 预计送达时间: {}", orderId, trackingNo, shipper, estimateTime);
         
         try {
             log.info("开始调用发货服务");
-            boolean success = deliveryService.shipOrder(orderId, trackingNo, shipper);
+            boolean success = deliveryService.shipOrder(orderId, trackingNo, shipper, estimateTime);
             log.info("发货服务调用结果: {}", success ? "成功" : "失败");
             
             if (success) {
