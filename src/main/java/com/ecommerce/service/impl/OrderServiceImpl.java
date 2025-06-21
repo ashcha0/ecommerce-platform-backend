@@ -208,22 +208,20 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateOrderStatus(Long orderId, String status) {
-        log.info("更新订单状态，订单ID: {}, 状态: {}", orderId, status);
+        log.info("更新配送状态，订单ID: {}, 状态: {}", orderId, status);
 
         Order order = orderMapper.selectById(orderId);
         if (order == null) {
             throw new BusinessException(ErrorCode.ORDER_NOT_FOUND, "订单不存在");
         }
 
-        // 验证状态转换的合法性
-        validateStatusTransition(order.getStatus(), Order.OrderStatus.valueOf(status));
-
-        int result = orderMapper.updateStatus(orderId, status);
-        if (result <= 0) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "订单状态更新失败");
+        // 调用配送服务更新配送状态
+        boolean result = deliveryService.updateDeliveryStatus(orderId, status);
+        if (!result) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "配送状态更新失败");
         }
 
-        log.info("订单状态更新成功，订单ID: {}, 新状态: {}", orderId, status);
+        log.info("配送状态更新成功，订单ID: {}, 新状态: {}", orderId, status);
     }
 
     @Override
