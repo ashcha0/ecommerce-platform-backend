@@ -10,9 +10,9 @@ public class OrderQueryDTO {
     private String orderNo;
     private Long customerId;
     private Order.OrderStatus status;
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime startTime;
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime endTime;
     private int pageNum = 1;
     private int pageSize = 20;
