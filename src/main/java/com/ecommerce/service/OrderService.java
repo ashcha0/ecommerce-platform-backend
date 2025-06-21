@@ -45,4 +45,9 @@ public interface OrderService {
      * 获取简单订单列表
      */
     List<SimpleOrderVO> getSimpleOrders();
+
+    /**
+     * 获取订单状态统计
+     */
+    java.util.Map<String, Object> getOrderStatusStats();
 }

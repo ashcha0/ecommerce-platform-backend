@@ -5,6 +5,7 @@ import com.ecommerce.common.exception.BusinessException;
 import com.ecommerce.common.result.PageResult;
 import com.ecommerce.common.util.IdGenerator;
 import com.github.pagehelper.PageInfo;
+import com.ecommerce.mapper.DeliveryMapper;
 import com.ecommerce.mapper.OrderItemMapper;
 import com.ecommerce.mapper.OrderMapper;
 import com.ecommerce.mapper.ProductMapper;
@@ -39,6 +40,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final OrderItemMapper orderItemMapper;
     private final ProductMapper productMapper;
+    private final DeliveryMapper deliveryMapper;
     private final InventoryService inventoryService;
     private final DeliveryService deliveryService;
     private final IdGenerator idGenerator;
@@ -113,10 +115,10 @@ public class OrderServiceImpl implements OrderService {
             deliveryCreateDTO.setConsigneePhone(dto.getConsigneePhone());
             deliveryCreateDTO.setDeliveryAddress(dto.getDeliveryAddress());
             deliveryCreateDTO.setRemark(dto.getRemark());
-            
-            log.info("准备创建配送记录，订单ID: {}, 收货人: {}, 电话: {}, 地址: {}", 
+
+            log.info("准备创建配送记录，订单ID: {}, 收货人: {}, 电话: {}, 地址: {}",
                     order.getId(), dto.getConsigneeName(), dto.getConsigneePhone(), dto.getDeliveryAddress());
-            
+
             deliveryService.createDeliveryWithDetails(deliveryCreateDTO);
             log.info("配送记录创建成功，订单ID: {}", order.getId());
         } catch (Exception e) {
@@ -259,10 +261,10 @@ public class OrderServiceImpl implements OrderService {
 
         // 查询配送信息
         Delivery delivery = deliveryService.getDeliveryByOrderId(orderId);
-        
+
         OrderDetailVO.DeliveryVO deliveryVO = new OrderDetailVO.DeliveryVO();
         deliveryVO.setOrderId(orderId);
-        
+
         if (delivery != null) {
             // 如果存在配送信息，填充详细数据
             deliveryVO.setTrackingNo(delivery.getTrackingNo());
@@ -270,7 +272,7 @@ public class OrderServiceImpl implements OrderService {
             deliveryVO.setStatus(delivery.getStatus() != null ? delivery.getStatus().name() : "UNKNOWN");
             deliveryVO.setShipTime(delivery.getShipTime());
             deliveryVO.setDeliveryTime(delivery.getDeliveryTime());
-            
+
             // 设置配送地址和收货人信息
             if (delivery.getDeliveryAddress() != null) {
                 deliveryVO.setDeliveryAddress(delivery.getDeliveryAddress());
@@ -284,14 +286,14 @@ public class OrderServiceImpl implements OrderService {
             if (delivery.getEstimateTime() != null) {
                 deliveryVO.setEstimatedDeliveryTime(delivery.getEstimateTime());
             }
-            
+
             log.info("查询到配送信息，配送状态: {}", delivery.getStatus());
         } else {
             // 如果没有配送信息，使用订单中的基本信息
             deliveryVO.setStatus("SHIPPING");
             deliveryVO.setDeliveryAddress(order.getDeliveryAddress());
             // 注意：收货人信息应该在配送表中，如果没有配送记录则无法获取
-            
+
             log.info("未找到配送信息，使用订单基本信息");
         }
 
@@ -335,10 +337,10 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<SimpleOrderVO> getSimpleOrders() {
         log.info("获取简单订单列表");
-        
+
         // 查询所有订单
         List<Order> orders = orderMapper.selectAll();
-        
+
         // 转换为SimpleOrderVO
         List<SimpleOrderVO> simpleOrders = new ArrayList<>();
         for (Order order : orders) {
@@ -352,7 +354,66 @@ public class OrderServiceImpl implements OrderService {
             vo.setCreateTime(order.getCreateTime());
             simpleOrders.add(vo);
         }
-        
+
         return simpleOrders;
+    }
+
+    @Override
+    public java.util.Map<String, Object> getOrderStatusStats() {
+        log.info("开始获取订单状态统计");
+        
+        try {
+            // 从delivery表获取配送状态统计
+            List<DeliveryMapper.DeliveryStatusCount> statusCounts = deliveryMapper.getDeliveryStatusStats();
+            
+            // 转换为前端需要的格式
+            java.util.Map<String, Object> result = new java.util.HashMap<>();
+            
+            for (DeliveryMapper.DeliveryStatusCount statusCount : statusCounts) {
+                String status = statusCount.getStatus();
+                Long count = statusCount.getCount();
+                
+                // 将配送状态映射为订单状态
+                switch (status) {
+                    case "PAYING":
+                        result.put("PAYING", count);
+                        break;
+                    case "SHIPPING":
+                        result.put("SHIPPING", count);
+                        break;
+                    case "RECEIPTING":
+                        result.put("RECEIPTING", count);
+                        break;
+                    case "COMPLETED":
+                        result.put("COMPLETED", count);
+                        break;
+                    case "CANCELLED":
+                        result.put("CANCELLED", count);
+                        break;
+                    case "PROCESSING":
+                        result.put("PROCESSING", count);
+                        break;
+                    case "PROCESSED":
+                        result.put("PROCESSED", count);
+                        break;
+                    default:
+                        log.warn("未知的配送状态: {}", status);
+                        break;
+                }
+            }
+            
+            // 确保所有状态都有值，没有数据的状态设为0
+            String[] allStatuses = {"PAYING", "SHIPPING", "RECEIPTING", "COMPLETED", "CANCELLED", "PROCESSING", "PROCESSED"};
+            for (String status : allStatuses) {
+                result.putIfAbsent(status, 0L);
+            }
+            
+            log.info("订单状态统计完成: {}", result);
+            return result;
+            
+        } catch (Exception e) {
+            log.error("获取订单状态统计失败", e);
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "获取订单状态统计失败");
+        }
     }
 }
