@@ -11,6 +11,7 @@ import com.ecommerce.mapper.ProductMapper;
 import com.ecommerce.model.dto.DeliveryCreateDTO;
 import com.ecommerce.model.dto.OrderCreateDTO;
 import com.ecommerce.model.dto.OrderQueryDTO;
+import com.ecommerce.model.entity.Delivery;
 import com.ecommerce.model.entity.Order;
 import com.ecommerce.model.entity.OrderItem;
 import com.ecommerce.model.entity.Product;
@@ -258,10 +259,43 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException(ErrorCode.ORDER_NOT_FOUND, "订单不存在");
         }
 
-        // TODO: 实现配送信息查询逻辑
+        // 查询配送信息
+        Delivery delivery = deliveryService.getDeliveryByOrderId(orderId);
+        
         OrderDetailVO.DeliveryVO deliveryVO = new OrderDetailVO.DeliveryVO();
         deliveryVO.setOrderId(orderId);
-        deliveryVO.setStatus("待配送");
+        
+        if (delivery != null) {
+            // 如果存在配送信息，填充详细数据
+            deliveryVO.setTrackingNo(delivery.getTrackingNo());
+            deliveryVO.setShipper(delivery.getShipper());
+            deliveryVO.setStatus(delivery.getStatus() != null ? delivery.getStatus().getDesc() : "未知状态");
+            deliveryVO.setShipTime(delivery.getShipTime());
+            deliveryVO.setDeliveryTime(delivery.getDeliveryTime());
+            
+            // 设置配送地址和收货人信息
+            if (delivery.getDeliveryAddress() != null) {
+                deliveryVO.setDeliveryAddress(delivery.getDeliveryAddress());
+            }
+            if (delivery.getConsigneeName() != null) {
+                deliveryVO.setConsigneeName(delivery.getConsigneeName());
+            }
+            if (delivery.getConsigneePhone() != null) {
+                deliveryVO.setConsigneePhone(delivery.getConsigneePhone());
+            }
+            if (delivery.getEstimateTime() != null) {
+                deliveryVO.setEstimatedDeliveryTime(delivery.getEstimateTime());
+            }
+            
+            log.info("查询到配送信息，配送状态: {}", delivery.getStatus());
+        } else {
+            // 如果没有配送信息，使用订单中的基本信息
+            deliveryVO.setStatus("待配送");
+            deliveryVO.setDeliveryAddress(order.getDeliveryAddress());
+            // 注意：收货人信息应该在配送表中，如果没有配送记录则无法获取
+            
+            log.info("未找到配送信息，使用订单基本信息");
+        }
 
         return deliveryVO;
     }
