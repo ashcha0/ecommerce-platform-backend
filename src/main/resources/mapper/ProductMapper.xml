@@ -58,23 +58,36 @@
     
     <!-- 条件查询商品 -->
     <select id="selectByCondition" resultType="com.ecommerce.model.entity.Product">
-        SELECT *
-        FROM product
+        SELECT p.*
+        FROM product p
+        <if test="inStock != null">
+            LEFT JOIN inventory i ON p.id = i.product_id
+        </if>
         <where>
-            <if test="name != null and name != ''">
-                AND name LIKE CONCAT('%', #{name}, '%')
+            <if test="name != null and name != ''"> 
+                AND p.name LIKE CONCAT('%', #{name}, '%')
             </if>
             <if test="storeId != null">
-                AND store_id = #{storeId}
+                AND p.store_id = #{storeId}
             </if>
             <if test="status != null">
-                AND status = #{status}
+                AND p.status = #{status}
             </if>
             <if test="minPrice != null">
-                AND price >= #{minPrice}
+                AND p.price >= #{minPrice}
             </if>
             <if test="maxPrice != null">
-                AND price &lt;= #{maxPrice}
+                AND p.price &lt;= #{maxPrice}
+            </if>
+            <if test="inStock != null">
+                <choose>
+                    <when test="inStock == true">
+                        AND i.stock > 0
+                    </when>
+                    <when test="inStock == false">
+                        AND (i.stock IS NULL OR i.stock = 0)
+                    </when>
+                </choose>
             </if>
 
             <!-- 处理额外的参数以避免MyBatis参数映射错误 -->
@@ -85,7 +98,7 @@
                 <!-- adminQuery参数用于业务逻辑判断，SQL中不需要处理 -->
             </if>
         </where>
-        ORDER BY create_time DESC
+        ORDER BY p.create_time DESC
     </select>
     
     
