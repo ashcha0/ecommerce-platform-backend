@@ -11,6 +11,7 @@ import com.ecommerce.mapper.ProductMapper;
 import com.ecommerce.model.dto.DeliveryCreateDTO;
 import com.ecommerce.model.dto.OrderCreateDTO;
 import com.ecommerce.model.dto.OrderQueryDTO;
+import com.ecommerce.model.entity.Delivery;
 import com.ecommerce.model.entity.Order;
 import com.ecommerce.model.entity.OrderItem;
 import com.ecommerce.model.entity.Product;
@@ -207,22 +208,20 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateOrderStatus(Long orderId, String status) {
-        log.info("更新订单状态，订单ID: {}, 状态: {}", orderId, status);
+        log.info("更新配送状态，订单ID: {}, 状态: {}", orderId, status);
 
         Order order = orderMapper.selectById(orderId);
         if (order == null) {
             throw new BusinessException(ErrorCode.ORDER_NOT_FOUND, "订单不存在");
         }
 
-        // 验证状态转换的合法性
-        validateStatusTransition(order.getStatus(), Order.OrderStatus.valueOf(status));
-
-        int result = orderMapper.updateStatus(orderId, status);
-        if (result <= 0) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "订单状态更新失败");
+        // 调用配送服务更新配送状态
+        boolean result = deliveryService.updateDeliveryStatus(orderId, status);
+        if (!result) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "配送状态更新失败");
         }
 
-        log.info("订单状态更新成功，订单ID: {}, 新状态: {}", orderId, status);
+        log.info("配送状态更新成功，订单ID: {}, 新状态: {}", orderId, status);
     }
 
     @Override
@@ -258,10 +257,43 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException(ErrorCode.ORDER_NOT_FOUND, "订单不存在");
         }
 
-        // TODO: 实现配送信息查询逻辑
+        // 查询配送信息
+        Delivery delivery = deliveryService.getDeliveryByOrderId(orderId);
+        
         OrderDetailVO.DeliveryVO deliveryVO = new OrderDetailVO.DeliveryVO();
         deliveryVO.setOrderId(orderId);
-        deliveryVO.setStatus("待配送");
+        
+        if (delivery != null) {
+            // 如果存在配送信息，填充详细数据
+            deliveryVO.setTrackingNo(delivery.getTrackingNo());
+            deliveryVO.setShipper(delivery.getShipper());
+            deliveryVO.setStatus(delivery.getStatus() != null ? delivery.getStatus().name() : "UNKNOWN");
+            deliveryVO.setShipTime(delivery.getShipTime());
+            deliveryVO.setDeliveryTime(delivery.getDeliveryTime());
+            
+            // 设置配送地址和收货人信息
+            if (delivery.getDeliveryAddress() != null) {
+                deliveryVO.setDeliveryAddress(delivery.getDeliveryAddress());
+            }
+            if (delivery.getConsigneeName() != null) {
+                deliveryVO.setConsigneeName(delivery.getConsigneeName());
+            }
+            if (delivery.getConsigneePhone() != null) {
+                deliveryVO.setConsigneePhone(delivery.getConsigneePhone());
+            }
+            if (delivery.getEstimateTime() != null) {
+                deliveryVO.setEstimatedDeliveryTime(delivery.getEstimateTime());
+            }
+            
+            log.info("查询到配送信息，配送状态: {}", delivery.getStatus());
+        } else {
+            // 如果没有配送信息，使用订单中的基本信息
+            deliveryVO.setStatus("SHIPPING");
+            deliveryVO.setDeliveryAddress(order.getDeliveryAddress());
+            // 注意：收货人信息应该在配送表中，如果没有配送记录则无法获取
+            
+            log.info("未找到配送信息，使用订单基本信息");
+        }
 
         return deliveryVO;
     }

@@ -25,7 +25,7 @@
         <result column="customer_name" property="customerName" jdbcType="VARCHAR"/>
         <result column="order_time" property="orderTime" jdbcType="TIMESTAMP"/>
         <result column="total_amount" property="totalAmount" jdbcType="DECIMAL"/>
-        <result column="status" property="orderStatus" jdbcType="VARCHAR"/>
+        <result column="status" property="deliveryStatus" jdbcType="VARCHAR"/>
     </resultMap>
 
     <!-- 基础字段 -->
@@ -84,17 +84,18 @@
             c.real_name as customer_name,
             o.order_time,
             o.total_amount,
-            o.status,
+            COALESCE(d.status, 'PENDING') as status,
             o.create_time,
             o.update_time
         FROM `order` o
         LEFT JOIN customer c ON o.customer_id = c.id
+        LEFT JOIN delivery d ON o.id = d.order_id
         <where>
             <if test="customerId != null">
                 AND o.customer_id = #{customerId}
             </if>
             <if test="status != null">
-                AND o.status = #{status,typeHandler=org.apache.ibatis.type.EnumTypeHandler}
+                AND COALESCE(d.status, 'PENDING') = #{status}
             </if>
             <if test="orderNo != null and orderNo != ''">
                 AND o.order_no LIKE CONCAT('%', #{orderNo}, '%')
@@ -117,12 +118,13 @@
         SELECT COUNT(*)
         FROM `order` o
         LEFT JOIN customer c ON o.customer_id = c.id
+        LEFT JOIN delivery d ON o.id = d.order_id
         <where>
             <if test="customerId != null">
                 AND o.customer_id = #{customerId}
             </if>
             <if test="status != null">
-                AND o.status = #{status,typeHandler=org.apache.ibatis.type.EnumTypeHandler}
+                AND COALESCE(d.status, 'PENDING') = #{status}
             </if>
             <if test="orderNo != null and orderNo != ''">
                 AND o.order_no LIKE CONCAT('%', #{orderNo}, '%')

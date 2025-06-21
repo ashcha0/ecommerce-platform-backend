@@ -49,6 +49,10 @@ public class OrderDetailVO {
         private String status;
         private LocalDateTime shipTime;
         private LocalDateTime deliveryTime;
+        private String deliveryAddress;
+        private String consigneeName;
+        private String consigneePhone;
+        private LocalDateTime estimatedDeliveryTime;
 
         public DeliveryVO() {
         }
@@ -59,6 +63,10 @@ public class OrderDetailVO {
             this.status = delivery.getStatus().name();
             this.shipTime = delivery.getShipTime();
             this.deliveryTime = delivery.getDeliveryTime();
+            this.deliveryAddress = delivery.getDeliveryAddress();
+            this.consigneeName = delivery.getConsigneeName();
+            this.consigneePhone = delivery.getConsigneePhone();
+            this.estimatedDeliveryTime = delivery.getEstimateTime();
         }
     }
 
