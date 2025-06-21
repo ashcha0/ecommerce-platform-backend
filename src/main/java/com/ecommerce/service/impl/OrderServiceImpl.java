@@ -269,7 +269,7 @@ public class OrderServiceImpl implements OrderService {
             // 如果存在配送信息，填充详细数据
             deliveryVO.setTrackingNo(delivery.getTrackingNo());
             deliveryVO.setShipper(delivery.getShipper());
-            deliveryVO.setStatus(delivery.getStatus() != null ? delivery.getStatus().getDesc() : "未知状态");
+            deliveryVO.setStatus(delivery.getStatus() != null ? delivery.getStatus().name() : "UNKNOWN");
             deliveryVO.setShipTime(delivery.getShipTime());
             deliveryVO.setDeliveryTime(delivery.getDeliveryTime());
             
@@ -290,7 +290,7 @@ public class OrderServiceImpl implements OrderService {
             log.info("查询到配送信息，配送状态: {}", delivery.getStatus());
         } else {
             // 如果没有配送信息，使用订单中的基本信息
-            deliveryVO.setStatus("待配送");
+            deliveryVO.setStatus("SHIPPING");
             deliveryVO.setDeliveryAddress(order.getDeliveryAddress());
             // 注意：收货人信息应该在配送表中，如果没有配送记录则无法获取
             
