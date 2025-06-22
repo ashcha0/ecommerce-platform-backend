@@ -95,7 +95,7 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}/delivery")
-    //TODO: 配送管理功能尚未开发
+    // TODO: 配送管理功能尚未开发
     @Operation(summary = "查询订单配送信息", description = "获取订单的配送信息")
     public Result<OrderDetailVO.DeliveryVO> getOrderDeliveryInfo(
             @Parameter(description = "订单ID") @PathVariable("orderId") @NotNull(message = "订单ID不能为空") @Positive(message = "订单ID必须为正数") Long orderId) {
@@ -106,8 +106,7 @@ public class OrderController {
     @GetMapping("/stats/customer/{customerId}")
     @Operation(summary = "客户订单统计", description = "统计指定客户的订单信息")
     public Result<Map<String, Object>> getCustomerOrderStats(
-            @Parameter(description = "客户ID") 
-            @PathVariable("customerId") @NotNull(message = "客户ID不能为空") @Positive(message = "客户ID必须为正数") Long customerId) {
+            @Parameter(description = "客户ID") @PathVariable("customerId") @NotNull(message = "客户ID不能为空") @Positive(message = "客户ID必须为正数") Long customerId) {
         // TODO: 实现客户订单统计逻辑
         return Result.success(Map.of("message", "功能开发中"));
     }
@@ -115,8 +114,8 @@ public class OrderController {
     @GetMapping("/stats/status")
     @Operation(summary = "订单状态统计", description = "统计各状态订单数量")
     public Result<Map<String, Object>> getOrderStatusStats() {
-        // TODO: 实现订单状态统计逻辑
-        return Result.success(Map.of("message", "功能开发中"));
+        Map<String, Object> stats = orderService.getOrderStatusStats();
+        return Result.success(stats);
     }
 
     @GetMapping("/stats/amount")

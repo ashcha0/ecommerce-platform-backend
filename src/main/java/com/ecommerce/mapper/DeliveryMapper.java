@@ -59,4 +59,38 @@ public interface DeliveryMapper {
      */
     @Delete("DELETE FROM delivery WHERE order_id = #{orderId}")
     int deleteByOrderId(@Param("orderId") Long orderId);
+
+    /**
+     * 统计各配送状态的订单数量
+     */
+    @Select("SELECT status, COUNT(*) as count FROM delivery GROUP BY status")
+    @Results({
+            @Result(column = "status", property = "status"),
+            @Result(column = "count", property = "count")
+    })
+    List<DeliveryStatusCount> getDeliveryStatusStats();
+
+    /**
+     * 配送状态统计结果类
+     */
+    class DeliveryStatusCount {
+        private String status;
+        private Long count;
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public Long getCount() {
+            return count;
+        }
+
+        public void setCount(Long count) {
+            this.count = count;
+        }
+    }
 }
