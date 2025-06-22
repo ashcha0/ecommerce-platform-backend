@@ -126,6 +126,17 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "配送记录创建失败: " + e.getMessage());
         }
 
+        // 8. 实际扣减库存（订单创建成功后）
+        for (OrderItem orderItem : orderItems) {
+            try {
+                inventoryService.deductStock(orderItem.getProductId(), orderItem.getQuantity());
+                log.info("库存扣减成功，商品ID: {}, 扣减数量: {}", orderItem.getProductId(), orderItem.getQuantity());
+            } catch (Exception e) {
+                log.error("库存扣减失败，商品ID: {}, 数量: {}", orderItem.getProductId(), orderItem.getQuantity(), e);
+                throw new BusinessException(ErrorCode.OPERATION_ERROR, "库存扣减失败");
+            }
+        }
+
         log.info("订单创建成功，订单号: {}, 订单ID: {}", orderNo, order.getId());
         return order;
     }
@@ -177,30 +188,44 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void cancelOrder(Long orderId) {
-        log.info("取消订单，订单ID: {}", orderId);
+        log.info("开始取消订单，订单ID: {}", orderId);
 
         Order order = orderMapper.selectById(orderId);
         if (order == null) {
+            log.error("订单不存在，订单ID: {}", orderId);
             throw new BusinessException(ErrorCode.ORDER_NOT_FOUND, "订单不存在");
         }
 
         if (order.getStatus() == Order.OrderStatus.CANCELLED) {
+            log.warn("订单已经是取消状态，订单ID: {}", orderId);
             throw new BusinessException(ErrorCode.ORDER_ALREADY_CANCELLED, "订单已取消");
         }
+
+        log.info("订单状态检查通过，当前状态: {}，订单ID: {}", order.getStatus(), orderId);
 
         // 更新订单状态
         int result = orderMapper.updateStatus(orderId, Order.OrderStatus.CANCELLED.name());
         if (result <= 0) {
+            log.error("订单状态更新失败，订单ID: {}", orderId);
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "订单取消失败");
         }
+        log.info("订单状态更新成功，订单ID: {}", orderId);
 
-        // 释放库存
+        // 返还库存
         List<OrderItem> orderItems = orderItemMapper.selectByOrderId(orderId);
+        log.info("开始返还库存，订单项数量: {}，订单ID: {}", orderItems.size(), orderId);
+        
         for (OrderItem item : orderItems) {
             try {
-                inventoryService.releaseStock(item.getProductId(), item.getQuantity());
+                log.info("开始返还库存，商品ID: {}, 返还数量: {}", item.getProductId(), item.getQuantity());
+                
+                // 直接增加库存数量，而不是释放锁定库存
+                inventoryService.updateInventory(item.getProductId(), item.getQuantity());
+                
+                log.info("库存返还成功，商品ID: {}, 返还数量: {}", item.getProductId(), item.getQuantity());
             } catch (Exception e) {
-                log.error("库存释放失败，商品ID: {}, 数量: {}", item.getProductId(), item.getQuantity(), e);
+                log.error("库存返还失败，商品ID: {}, 数量: {}, 错误信息: {}", item.getProductId(), item.getQuantity(), e.getMessage(), e);
+                // 继续处理其他商品的库存返还
             }
         }
 

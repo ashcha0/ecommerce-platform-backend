@@ -301,22 +301,26 @@ public class DeliveryServiceImpl implements DeliveryService {
     }
 
     @Override
+    @Transactional
     public boolean cancelOrder(Long orderId) {
-        log.info("取消订单，订单ID: {}", orderId);
+        log.info("配送服务取消订单，订单ID: {}", orderId);
         
-        Delivery delivery = deliveryMapper.selectByOrderId(orderId);
-        if (delivery == null) {
-            log.warn("配送信息不存在，订单ID: {}", orderId);
-            return false;
+        try {
+            // 更新配送状态为已取消
+            Delivery delivery = deliveryMapper.selectByOrderId(orderId);
+            if (delivery != null) {
+                delivery.setStatus(Delivery.DeliveryStatus.CANCELLED);
+                int result = deliveryMapper.updateById(delivery);
+                log.info("更新配送状态结果: {}", result > 0 ? "成功" : "失败");
+            }
+            
+            log.info("配送服务取消订单成功，订单ID: {}", orderId);
+            return true;
+            
+        } catch (Exception e) {
+            log.error("配送服务取消订单异常，订单ID: {}", orderId, e);
+            throw new RuntimeException("配送服务取消订单失败: " + e.getMessage(), e);
         }
-        
-        // 更新为已取消状态
-        delivery.setStatus(Delivery.DeliveryStatus.CANCELLED);
-        
-        int result = deliveryMapper.updateById(delivery);
-        log.info("取消订单结果: {}", result > 0 ? "成功" : "失败");
-        
-        return result > 0;
     }
 
     @Override

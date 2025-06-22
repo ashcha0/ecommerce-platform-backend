@@ -69,6 +69,13 @@ public interface InventoryService {
     void releaseStock(Long productId, Integer quantity);
     
     /**
+     * 扣减库存（实际减少库存数量）
+     * @param productId 商品ID
+     * @param quantity 扣减数量
+     */
+    void deductStock(Long productId, Integer quantity);
+    
+    /**
      * 获取库存统计信息
      */
     Map<String, Object> getInventoryStats();

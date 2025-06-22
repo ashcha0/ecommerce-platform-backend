@@ -314,6 +314,32 @@ public class InventoryServiceImpl implements InventoryService {
     }
     
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deductStock(Long productId, Integer quantity) {
+        if (productId == null || quantity == null || quantity <= 0) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR, "参数不能为空或无效");
+        }
+        
+        Inventory inventory = inventoryMapper.selectByProductId(productId);
+        if (inventory == null) {
+            throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND, "商品库存信息不存在");
+        }
+        
+        // 检查库存是否充足
+        if (inventory.getStock() < quantity) {
+            throw new BusinessException(ErrorCode.PRODUCT_INSUFFICIENT_STOCK, "库存不足，无法扣减");
+        }
+        
+        // 扣减库存（减少实际库存数量）
+        int result = inventoryMapper.updateStock(productId, -quantity);
+        if (result <= 0) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "库存扣减失败");
+        }
+        
+        log.info("商品ID: {} 库存扣减成功，扣减数量: {}", productId, quantity);
+    }
+    
+    @Override
     public boolean hasInventoryRecord(Long productId) {
         if (productId == null) {
             return false;
