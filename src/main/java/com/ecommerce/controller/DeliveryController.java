@@ -8,6 +8,7 @@ import com.ecommerce.model.dto.DeliveryUpdateDTO;
 import com.ecommerce.model.entity.Delivery;
 import com.ecommerce.model.vo.DeliveryVO;
 import com.ecommerce.service.DeliveryService;
+import com.ecommerce.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,6 +33,9 @@ public class DeliveryController {
 
     @Autowired
     private DeliveryService deliveryService;
+    
+    @Autowired
+    private OrderService orderService;
 
     @Operation(summary = "分页查询配送列表")
     @GetMapping
@@ -261,11 +265,20 @@ public class DeliveryController {
         
         log.info("取消订单，订单ID: {}", orderId);
         
-        boolean success = deliveryService.cancelOrder(orderId);
-        if (success) {
-            return Result.success(null, "取消订单成功");
+        try {
+            // 先调用订单服务取消订单并返还库存
+            orderService.cancelOrder(orderId);
+            
+            // 再调用配送服务更新配送状态
+            boolean success = deliveryService.cancelOrder(orderId);
+            if (success) {
+                return Result.success(null, "取消订单成功");
+            }
+            return Result.fail(400, "配送状态更新失败");
+        } catch (Exception e) {
+            log.error("取消订单失败，订单ID: {}, 错误信息: {}", orderId, e.getMessage(), e);
+            return Result.fail(500, "取消订单失败: " + e.getMessage());
         }
-        return Result.fail(400, "取消订单失败");
     }
 
     @Operation(summary = "申请售后")
