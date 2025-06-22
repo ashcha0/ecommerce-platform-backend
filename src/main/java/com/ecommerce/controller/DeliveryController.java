@@ -19,6 +19,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import java.util.Map;
 
 /**
  * 配送管理控制器
@@ -301,5 +302,19 @@ public class DeliveryController {
             return Result.success(null, "完成售后成功");
         }
         return Result.fail(400, "完成售后失败");
+    }
+
+    @Operation(summary = "获取配送统计信息")
+    @GetMapping("/stats")
+    public Result<Map<String, Object>> getDeliveryStats() {
+        log.info("获取配送统计信息");
+        
+        try {
+            Map<String, Object> stats = deliveryService.getDeliveryStats();
+            return Result.success(stats, "获取配送统计信息成功");
+        } catch (Exception e) {
+            log.error("获取配送统计信息时发生异常", e);
+            return Result.fail(500, "获取配送统计信息失败，请稍后重试");
+        }
     }
 }

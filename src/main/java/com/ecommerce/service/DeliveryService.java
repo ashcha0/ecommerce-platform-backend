@@ -7,6 +7,8 @@ import com.ecommerce.model.dto.DeliveryUpdateDTO;
 import com.ecommerce.model.entity.Delivery;
 import com.ecommerce.model.vo.DeliveryVO;
 
+import java.util.Map;
+
 /**
  * 配送服务接口
  */
@@ -106,4 +108,10 @@ public interface DeliveryService {
      * @return 是否成功
      */
     boolean completeAfterSale(Long orderId);
+
+    /**
+     * 获取配送统计信息
+     * @return 配送统计数据
+     */
+    Map<String, Object> getDeliveryStats();
 }
