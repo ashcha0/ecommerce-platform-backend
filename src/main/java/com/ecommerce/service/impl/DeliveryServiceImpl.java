@@ -17,7 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -353,5 +355,78 @@ public class DeliveryServiceImpl implements DeliveryService {
         log.info("完成售后结果: {}", result > 0 ? "成功" : "失败");
         
         return result > 0;
+    }
+
+    @Override
+    public Map<String, Object> getDeliveryStats() {
+        log.info("获取配送统计信息");
+        
+        try {
+            // 获取配送状态统计
+            List<DeliveryMapper.DeliveryStatusCount> statusStats = deliveryMapper.getDeliveryStatusStats();
+            
+            Map<String, Object> stats = new HashMap<>();
+            
+            // 初始化统计数据
+            long total = 0;
+            long pending = 0;  // 待发货 (PAYING + SHIPPING)
+            long shipped = 0;  // 已发货 (RECEIPTING)
+            long delivered = 0; // 已送达 (COMPLETED)
+            long cancelled = 0; // 已取消
+            long processing = 0; // 售后处理中
+            long processed = 0; // 售后处理完成
+            
+            // 统计各状态数量
+            for (DeliveryMapper.DeliveryStatusCount stat : statusStats) {
+                String status = stat.getStatus();
+                Long count = stat.getCount();
+                total += count;
+                
+                switch (status) {
+                    case "PAYING":
+                    case "SHIPPING":
+                        pending += count;
+                        break;
+                    case "RECEIPTING":
+                        shipped += count;
+                        break;
+                    case "COMPLETED":
+                        delivered += count;
+                        break;
+                    case "CANCELLED":
+                        cancelled += count;
+                        break;
+                    case "PROCESSING":
+                        processing += count;
+                        break;
+                    case "PROCESSED":
+                        processed += count;
+                        break;
+                }
+            }
+            
+            // 构建返回数据
+            stats.put("total", total);
+            stats.put("pending", pending);
+            stats.put("shipped", shipped);
+            stats.put("delivered", delivered);
+            stats.put("cancelled", cancelled);
+            stats.put("processing", processing);
+            stats.put("processed", processed);
+            
+            // 详细状态统计
+            Map<String, Long> statusDetail = new HashMap<>();
+            for (DeliveryMapper.DeliveryStatusCount stat : statusStats) {
+                statusDetail.put(stat.getStatus(), stat.getCount());
+            }
+            stats.put("statusDetail", statusDetail);
+            
+            log.info("配送统计信息获取成功: {}", stats);
+            return stats;
+            
+        } catch (Exception e) {
+            log.error("获取配送统计信息失败", e);
+            throw new RuntimeException("获取配送统计信息失败", e);
+        }
     }
 }
