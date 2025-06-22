@@ -13,6 +13,9 @@
         <result column="estimate_time" property="estimateTime"/>
         <result column="delivery_time" property="deliveryTime"/>
         <result column="create_time" property="createTime"/>
+        <result column="consignee_name" property="consigneeName"/>
+        <result column="consignee_phone" property="consigneePhone"/>
+        <result column="delivery_address" property="deliveryAddress"/>
     </resultMap>
 
     <!-- 通用查询条件 -->
@@ -49,7 +52,8 @@
     <select id="selectDeliveryList" resultMap="DeliveryResultMap">
         SELECT 
             id, order_id, tracking_no, shipper, status, 
-            ship_time, estimate_time, delivery_time, create_time
+            ship_time, estimate_time, delivery_time, create_time,
+            consignee_name, consignee_phone, delivery_address
         FROM delivery
         <include refid="whereCondition"/>
         ORDER BY create_time DESC

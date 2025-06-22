@@ -14,6 +14,9 @@ public class DeliveryVO {
     private Long orderId;
     private String trackingNo;
     private String shipper;
+    private String consigneeName;
+    private String consigneePhone;
+    private String deliveryAddress;
     private String status;
     private String statusDesc;
     private LocalDateTime shipTime;
@@ -30,6 +33,9 @@ public class DeliveryVO {
             this.orderId = delivery.getOrderId();
             this.trackingNo = delivery.getTrackingNo();
             this.shipper = delivery.getShipper();
+            this.consigneeName = delivery.getConsigneeName();
+            this.consigneePhone = delivery.getConsigneePhone();
+            this.deliveryAddress = delivery.getDeliveryAddress();
             if (delivery.getStatus() != null) {
                 this.status = delivery.getStatus().name();
                 this.statusDesc = delivery.getStatus().getDesc();
